@@ -1,0 +1,11 @@
+[Unit]
+Description=daemon to support failover on multiple links.
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/multiwan start
+ExecStopPost=-/usr/bin/multiwan stop
+
+[Install]
+WantedBy=multi-user.target

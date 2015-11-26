@@ -1,0 +1,11 @@
+[Unit]
+Description=IDP Customer Run Once Function
+After=network-online.target
+
+[Service]
+ExecStart=/etc/runonce/runonce.sh
+
+[Install]
+WantedBy=multi-user.target
+
+

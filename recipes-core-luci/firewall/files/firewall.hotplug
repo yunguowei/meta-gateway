@@ -1,0 +1,27 @@
+#!/bin/sh
+# This script is executed as part of the hotplug event with
+# HOTPLUG_TYPE=iface, triggered by various scripts when an interface
+# is configured (ACTION=ifup) or deconfigured (ACTION=ifdown).  The
+# interface is available as INTERFACE, the real device as DEVICE.
+
+[ "$DEVICE" == "lo" ] && exit 0
+
+. /lib/functions.sh
+. /lib/firewall/core.sh
+
+fw_init
+
+systemctl is-enabled firewall && \
+while true ; do
+	fw_is_loaded && break
+	sleep 1
+done
+
+case "$ACTION" in
+	ifup)
+		fw_configure_interface "$INTERFACE" add "$DEVICE" &
+	;;
+	ifdown)
+		fw_configure_interface "$INTERFACE" del "$DEVICE"
+	;;
+esac

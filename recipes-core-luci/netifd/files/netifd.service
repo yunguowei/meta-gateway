@@ -1,0 +1,20 @@
+[Unit]
+Description=Network Interface Daemon (netifd)
+ConditionCapability=CAP_NET_ADMIN
+DefaultDependencies=no
+After=dbus.service ubus.service network-pre.target systemd-sysusers.service
+Before=network.target multi-user.target shutdown.target
+Conflicts=shutdown.target
+Wants=network.target
+
+[Service]
+Type=notify
+ExecStart=/sbin/netifd-systemd-wrapper start
+NotifyAccess=all
+RemainAfterExit=yes
+ExecStop=/sbin/netifd-systemd-wrapper stop
+#ExecReload=/bin/sh -c "/bin/ubus call network reload && /sbin/wifi reload_legacy"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

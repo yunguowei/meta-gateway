@@ -1,0 +1,29 @@
+From 96ea9a431d71acb3615ec27181fda70e627a6069 Mon Sep 17 00:00:00 2001
+From: Renxiu Liang <renxiu.liang@windriver.com>
+Date: Wed, 19 Dec 2012 09:10:49 +0800
+Subject: [PATCH] set correct pkgconfig path in libnl-tiny.pc
+
+---
+ files/libnl-tiny.pc |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/files/libnl-tiny.pc b/files/libnl-tiny.pc
+index 8c1bf6f..cb29d69 100644
+--- a/files/libnl-tiny.pc
++++ b/files/libnl-tiny.pc
+@@ -1,5 +1,5 @@
+ prefix=/usr
+-exec_prefix=/usr
++exec_prefix=/
+ libdir=${exec_prefix}/lib
+ includedir=${prefix}/include/libnl-tiny
+ 
+@@ -7,4 +7,4 @@ Name: libnl-tiny
+ Description: Convenience library for netlink sockets
+ Version: 2.0
+ Libs: -L${libdir} -lnl-tiny
+-Cflags:
++Cflags: -I${includedir}
+-- 
+1.7.0.5
+

@@ -1,0 +1,35 @@
+#!/bin/sh /etc/rc.common
+
+ROOT_NFS=$(cat /proc/cmdline|grep 'root=/dev/nfs')
+test -n "$ROOT_NFS" && exit 0
+
+START=99
+
+start_multiwan () {
+	local enabled=`uci get multiwan.config.enabled`
+
+	[ "$enabled" -gt 0 ] || {
+		echo "Multi WAN is disabled"
+		return 1
+	}
+	start-stop-daemon --start --quiet --background --exec /usr/bin/multiwan start
+}
+
+start() {
+	wait_background network
+
+	echo "Start Multi WAN monitor"
+	start_multiwan &
+}
+
+stop () {
+	echo "Stop Multi WAN monitor"
+	#start-stop-daemon --stop --quiet --name multiwan
+	/usr/bin/multiwan stop
+}
+
+restart () {
+	stop
+	start
+}
+

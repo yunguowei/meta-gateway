@@ -1,0 +1,4 @@
+# This file includes all the modems information supported default
+# Manufacturer|Production|ManufacturerID|ProductID|ConnectionType|pppdDevice|stateDevice
+# Ericsson|F5521gw|0bdb|190d|3g|ttyACM0|ttyACM1
+Telit|HE910|1bc7|0021|3g|ttyACM0|ttyACM3

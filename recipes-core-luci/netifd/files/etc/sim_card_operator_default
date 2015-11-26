@@ -1,0 +1,58 @@
+#SIM card supported as default.
+#See mobile-broadband-provider-info/serviceproviders.xml in detail.
+#
+#Country Code:Network Name:Operator Name/Code:APN Name:Username:Password:3G Service Type:Sierra Network Type
+ca:Rogers:FastRoam:internet.com:wapuser1:wap:umts_first:UMTS
+us:Verizon:311480:vzwinternet:::umts_first:LTE
+us:AT&amp;T Media Net:310038:wap.cingular:::umts_first:UMTS
+us:AT&amp;T Media Net:310090:wap.cingular:::umts_first:UMTS
+us:AT&amp;T Media Net:310150:wap.cingular:::umts_first:UMTS
+us:AT&amp;T Media Net:310410:wap.cingular:::umts_first:UMTS
+us:AT&amp;T Media Net:310560:wap.cingular:::umts_first:UMTS
+us:AT&amp;T Media Net:310680:wap.cingular:::umts_first:UMTS
+us:Verizon:311480:vzwinternet:::umts_first:LTE
+us:T-Mobile:310200:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310160:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310210:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310220:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310230:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310240:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310250:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310260:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310310:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310490:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310580:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310660:epc.tmobile.com:::umts_first:UMTS
+us:T-Mobile:310800:epc.tmobile.com:::umts_first:UMTS
+au:Vodafone Australia:50503:vfinternet.au:::umts_first:UMTS
+be:Proximus:20601:internet.proximus.be:::umts_first:UMTS
+cn:China Unicom 3G:46001:3gnet:uninet::umts_first:UMTS
+cn:China Mobile Internet:46000:cmnet:::gprs_only:UMTS
+cn:China Mobile Internet:CHINA MOBILE:cmnet:::gprs_only:UMTS
+de:Vodafone Germany:Vodafone:web.vodafone.de:::umts_first:UMTS
+de:Vodafone Germany:26202:web.vodafone.de:::umts_first:UMTS
+de:Vodafone Germany:26204:web.vodafone.de:::umts_first:UMTS
+de:Vodafone Germany:26209:web.vodafone.de:::umts_first:UMTS
+dk:TDC Mobil:23801:internet:::umts_first:UMTS
+ee:Elisa Estonia:24802:internet:::umts_first:UMTS
+eg:Vodafone Egypt:60202:internet.vodafone.net:internet:internet:umts_first:UMTS
+es:Vodafone Spain:21401:ac.vodafone.es:vodafone:vodafone:umts_first:UMTS
+es:Vodafone Spain:21406:ac.vodafone.es:vodafone:vodafone:umts_first:UMTS
+fr:SFR:20810:wapsfr:::umts_first:UMTS
+fr:SFR:20811:wapsfr:::umts_first:UMTS
+fj:Vodafone Fiji:54201:vfinternet.fj::::umts_first:UMTS
+fi:Elisa Finland:24405:internet:::umts_first:UMTS
+gr:Vodafone Greece:20205:internet:::umts_first:UMTS
+hr:Vipnet:21910:3g.vip.hr:38591:38591:umts_first:UMTS
+hu:Vodafone Hungary:21670:internet.vodafone.net:::umts_first:UMTS
+ie:Vodafone Ireland:27201:office.vodafone.ie:vodafone:vodafone:umts_first:UMTS
+it:Vodafone Italy:22210:web.omnitel.it:vodafone:vodafone:umts_first:UMTS
+it:3 Italy:22299:datacard.tre.it:::umts_first:UMTS
+lu:LUXGSM:27001:web.pt.lu:::umts_first:UMTS
+mt:Vodafone Malta:27801:Internet:internet:internet:umts_first:UMTS
+na:MTC Bahrain:64901:internet:internet:internet:umts_first:UMTS
+nl:Vodafone Netherlands:20404:office.vodafone.nl:::umts_first:UMTS
+nz:Vodafone New Zealand:53001:www.vodafone.net.nz:::umts_first:UMTS
+pt:Vodafone Portugal:26803:internet.vodafone.pt:vodafone:vodafone:umts_first:UMTS
+si:SiMobil:29340:internet.simobil.si:simobil:simobil:umts_first:UMTS
+

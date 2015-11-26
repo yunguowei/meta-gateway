@@ -1,0 +1,11 @@
+[Unit]
+Description=FastCGI Listen Socket
+
+[Socket]
+SocketUser=www-data
+SocketGroup=www-data
+SocketMode=0600
+ListenStream=/var/run/fcgi.sock
+
+[Install]
+WantedBy=sockets.target

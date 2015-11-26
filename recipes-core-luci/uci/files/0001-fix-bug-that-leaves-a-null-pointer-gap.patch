@@ -1,0 +1,38 @@
+---
+ file.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/file.c b/file.c
+index c2b0e72..7152001 100644
+--- a/file.c
++++ b/file.c
+@@ -794,7 +794,7 @@ static char **uci_list_config_files(struct uci_context *ctx)
+ {
+ 	char **configs;
+ 	glob_t globbuf;
+-	int size, i;
++	int size, i, index;
+ 	char *buf;
+ 	char *dir;
+ 
+@@ -818,7 +818,7 @@ static char **uci_list_config_files(struct uci_context *ctx)
+ 
+ 	configs = uci_malloc(ctx, size);
+ 	buf = (char *) &configs[globbuf.gl_pathc + 1];
+-	for(i = 0; i < globbuf.gl_pathc; i++) {
++	for(i = 0, index = 0; i < globbuf.gl_pathc; i++) {
+ 		char *p;
+ 
+ 		p = get_filename(globbuf.gl_pathv[i]);
+@@ -828,7 +828,7 @@ static char **uci_list_config_files(struct uci_context *ctx)
+ 		if (!uci_validate_package(p))
+ 			continue;
+ 
+-		configs[i] = buf;
++		configs[index++] = buf;
+ 		strcpy(buf, p);
+ 		buf += strlen(buf) + 1;
+ 	}
+-- 
+2.0.0
+

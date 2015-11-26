@@ -1,0 +1,15 @@
+[Unit]
+Description=Simple firewall
+After=network.target
+Requires=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c ". /lib/firewall/core.sh; fw_start"
+ExecStartPost=/lib/systemd/systemd-sysctl --prefix=/proc/sys/net/netfilter --prefix=/proc/sys/net/bridge
+RemainAfterExit=yes
+ExecStop=/bin/sh -c ". /lib/firewall/core.sh; fw_stop"
+ExecReload=/bin/sh -c ". /lib/firewall/core.sh; fw_reload"
+
+[Install]
+WantedBy=multi-user.target

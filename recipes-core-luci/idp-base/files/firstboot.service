@@ -1,0 +1,15 @@
+[Unit]
+Description=Firstboot for IDP
+Before=sysinit.target shutdown.target systemd-update-done.service
+After=systemd-udevd.service run-postinsts.service systemd-remount-fs.service systemd-tmpfiles-setup.service tmp.mount
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/firstboot
+ExecStartPost=/bin/systemctl disable firstboot.service
+RemainAfterExit=No
+TimeoutSec=0
+
+[Install]
+WantedBy=sysinit.target

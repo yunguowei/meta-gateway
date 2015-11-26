@@ -1,0 +1,25 @@
+From 8c731365ec1cfea8d25982c9098a15810aa0bfcd Mon Sep 17 00:00:00 2001
+From: Xin Ouyang <xin.ouyang@windriver.com>
+Date: Tue, 31 Mar 2015 10:16:49 +0800
+Subject: [PATCH] ubus: add libubus version number for qa issue.
+
+Signed-off-by: Xin Ouyang <xin.ouyang@windriver.com>
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b2cb6ba..dfcfbea 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -14,6 +14,7 @@ ENDIF()
+ 
+ ADD_LIBRARY(ubus SHARED libubus.c libubus-io.c libubus-obj.c libubus-sub.c libubus-req.c)
+ TARGET_LINK_LIBRARIES(ubus ubox)
++SET_TARGET_PROPERTIES(ubus PROPERTIES VERSION 0.0.0 SOVERSION 0)
+ 
+ ADD_EXECUTABLE(ubusd ubusd.c ubusd_id.c ubusd_obj.c ubusd_proto.c ubusd_event.c)
+ TARGET_LINK_LIBRARIES(ubusd ubox)
+-- 
+1.9.1
+

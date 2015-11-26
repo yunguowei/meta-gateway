@@ -1,0 +1,16 @@
+#!/bin/sh
+# Copyright (C) 2006-2010 OpenWrt.org
+
+export HOTPLUG_TYPE="$1"
+
+. /lib/functions.sh
+
+LOGNAME=root
+USER=root
+export LOGNAME USER
+
+[ \! -z "$1" -a -d /etc/hotplug.d/$1 ] && {
+	for script in $(ls /etc/hotplug.d/$1/* 2>&-); do (
+		[ -f $script ] && . $script
+	); done
+}

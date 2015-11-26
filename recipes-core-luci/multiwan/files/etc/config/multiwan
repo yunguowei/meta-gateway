@@ -1,0 +1,12 @@
+
+config 'multiwan' 'config'
+	option 'debug' '0'
+	option 'priority' 'wan'
+
+config 'interface' 'wan'
+	option 'health_interval' '3'
+	option 'failover_to' 'wwan'
+
+config 'interface' 'wwan'
+	option 'health_interval' '3'
+	option 'failover_to' 'wan'

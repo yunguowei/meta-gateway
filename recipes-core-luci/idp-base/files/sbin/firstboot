@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# This is the script which will be invoked in /etc/rc.sysinit only when the
+# target board for the first time. It configures basic services to keep and
+# make factory configuration backup for future restore.
+. /etc/functions.sh
+. /lib/config/uci.sh
+
+# Get preset hostname, used for anaconda, so deleted.
+# if [ -e /etc/hostname ]; then
+# 	hostname=`cat /etc/hostname`
+# 	rm -f /etc/hostname
+# 	uci set system.@system[0].hostname=$hostname
+# 	uci commit system
+# fi
+
+# Find eth1 interface and add avaliable eth1 into lan bridge
+eth1_get=`ifconfig eth2`
+
+[ -n "$eth1_get" ] && {
+    sed -i "s/wlan0/eth2 wlan0/g" /etc/config/network
+}
+
+# create softlink for pptp init script
+update-alternatives --install /bin/ip bin-ip /sbin/ip 99
+
+# Generate factory configuration tar ball
+copy_files="/etc/hosts
+/etc/ethers"
+copy_dirs="/etc/config"
+config_file="factory_config.tgz"
+tmp=/tmp/config.$$
+[ ! -e /etc/$config_file ] && {
+	rm -rf $tmp 2>/dev/null
+	mkdir -p $tmp 2>/dev/null
+	date > $tmp/config.date
+	echo "WR_IntelligentDevice_Default" > $tmp/config.name
+	cat /etc/board_name > $tmp/config.boardtype
+	for file in $copy_files
+	do
+		mkdir -p `dirname $tmp$file` 2>/dev/null
+		cp $file $tmp$file
+	done
+	for dir in $copy_dirs
+	do
+		mkdir -p $tmp$dir
+		cp -afr $dir/* $tmp$dir/ 2>/dev/null
+	done
+	( cd $tmp ; tar -zcf $config_file * )
+	mv $tmp/$config_file /etc/$config_file
+	rm -rf $tmp 2>/dev/null
+}
+
+#fix the bug: the secondary screen is dark when dual display
+[ -e /etc/X11/xorg.conf ] && {
+	sed -i '/Attr\/26/s/18/24/g'  /etc/X11/xorg.conf
+	sed -i '/Attr\/26/a\\ \ \ \ Option\ \ \ \ \ \"ALL\/1\/Port\/4\/Attr\/45\"\ \ \ \ \"0\"' /etc/X11/xorg.conf
+}
+
+# The openwrt initrcs are enabled by rpm-postinst. They will not start by
+# systemd sysv generator, so manually start these initrcs.
+systemctl daemon-reload
+for i in /etc/rc.d/S* ; do
+	[ -f "$i" ] || continue
+        service_path=`readlink -f $i`
+        service_name=`basename $service_path`
+        systemctl start $service_name
+done
+
+exit 0

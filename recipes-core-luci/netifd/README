@@ -1,0 +1,270 @@
+1.  Introduction
+================
+NetIFD stands for Network Interface Daemon, which is originally developed
+by OpenWrt developers. It is ported into IDP to replace the old network
+interfaces management. With NetIFD, users only need to configure
+interfaces in /etc/config/network and /etc/config/wireless. When file
+/etc/config/network changes, you no longer have to restart all interfaces,
+simply run /etc/init.d/network reload. This will issue an ubus-call to
+NetIFD, telling it to figure out the difference between runtime state and
+the new config and apply only that. This works on a per-interface level,
+even with protocol handlers written as shell scripts.
+
+NetIFD will be able to manage even complex interface configurations with a
+mix of bonding, vlans, bridges, etc. and handle the dependencies between
+interfaces properly.
+
+
+This release is configured by following command:
+
+    $ /path/to/wrlinux/configure \
+    --enable-kernel=standard --enable-rootfs=glibc-idp \
+    --enable-addons=wr-idp \
+    --enable-board=intel-quark \
+
+Note:
+1) board "intel-quark" can be replaced by "intel-atom-baytrail." or other valid BSPs.
+2) NetIFD belong to wr-idp-devkit layer, and this layer is added default, so do not
+need to add it manual.
+3) In different board, there are different hardware interfaces, so you'll
+find different default interfaces after target is booted
+
+2.  NetIFD Packages
+=======================================
+2.1 Packages
+------------
+    * base-files
+    * hotplug2
+    * uci
+    * libnl-tiny
+    * json-c
+    * libubox
+    * ubus
+    * netifd
+    * busybox
+    * hostapd
+    * wpa-supplicant
+    * wireless-tools
+    * iw
+    * comgt
+    * ppp
+    * dnsmasq
+    * multiwan
+
+3.  NetIFD Packages' Description
+========================================
+3.1 base-files
+------------
+    base-files contains a base filesystem and system script. The system
+    script will be used by OpenWrt style init script or other script that
+    involves uci config.
+
+3.2 hotplug2
+------------
+    Hotplug2 is a lightweight udev replacement, responsible for exporting Linux
+    kernel uevents into the userspace and allowing users to write simple rules
+    for their processing. Development is focused on very small binary
+    footprint, as well as fast runtime, rather than feature-richness. This
+    makes it a perfect candidate for embedded devices and other environments
+    with severely limited resources.
+
+3.3 uci
+------------
+    UCI stands for Unified Configuration Interface and is intended to
+    centralize the configurations in IDP. The configuration files are placed in
+    /etc/config/ folder, and users can manage the configuration files via uci
+    command directly.
+
+3.4 libnl-tiny
+------------
+    libnl-tiny contians a stripped down version of libnl, netifd uses the
+    network socket library provided by libnl-tiny package instead of libnl
+    package.
+
+3.5 json-c
+------------
+    json-c contains a library for javascript object notation backends.
+
+3.6 libubox
+------------
+    libubox is a general purpose library which provides things like an event
+    loop, binary blob message formatting and handling, the Linux linked list
+    implementation, and some JSON helpers. The basic utility library in
+    libubox will be used by netifd and ubus.
+
+3.7 ubus
+------------
+    ubus is OpenWrt's micro bus architecture, similar to DBus. It contains a
+    RPC daemon 'ubusd' and a command line tool 'ubus', the 'ubus' command line
+    client allows to interact with the 'ubusd' RPC server.
+
+3.8 netifd
+------------
+    netifd is an RPC-capable daemon written in C for better access to kernel
+    APIs with the ability to listen on netlink events.
+
+3.9 busybox
+------------
+    busybox is patched with OpenWrt patches for udhcpc client, netfid will use
+    udhcpc to gain ip address for those interfaces that use dhcp protocol
+    automatically.
+
+3.10 hostapd
+------------
+    hostapd is patched with OpenWrt patches and assistant script, netifd will
+    use the patched hostapd to make the target be an AP automatically.
+
+3.11 wpa-supplicant
+------------
+    wpa-supplicant is patched with OpenWrt assistant script, netifd will use
+    the patched wpa-supplicant to make the target be an STA automatically.
+
+
+3.12 wireless-tools
+------------
+    wireless-tools provides tools like iwconfig to check and configurate wifi.
+
+3.13 iw
+------------
+    iw is a new nl80211 based CLI configuration utility for wireless devices.
+    It provides tools like iw to check and configurate wifi devices.
+
+3.14 comgt
+------------
+    comgt is a command line tool for controlling, configuring and interacting
+    with Option Wireless 3G and 2G (HSDPA, UMTS, EDGE, GPRS, GSM) data devices
+    within the Linux environment.
+
+3.15 ppp
+------------
+    ppp is patched with OpenWrt patches and assistant scripts, netifd will use
+    the patched ppp to make the target establish a 3G connection automatically.
+
+3.16 dnsmasq
+------------
+    dnsmasq is lightweight, easy to configure DNS forwarder and DHCP sever.
+    It is designed to provide DNS and, optionally DHCP, to a small network.
+    dnsmasq is the default DNS forwarder and DHCP server in IDP.
+
+3.17 multiwan
+------------
+    multiwan is a package from openwrt, which provides agent script that makes
+    Multi-WAN configuration simple, easy and manageable.
+    However, script files integrated this time is a stripped version, just enable
+    one interface at any time. It selects one interface as default, checks the
+    connectivity of it and swithes to the next one when checking fail.
+    All interfaces including the prior one as default can be configurated in
+    /etc/config/multiwan.
+
+4.  NetIFD Test Cases
+=============================
+4.1 Env Setup
+------------
+1) build a platform project
+
+    $ /path/to/wrlinux/configure \
+      --enable-kernel=standard --enable-rootfs=glibc-idp \
+      --enable-addons=wr-idp \
+      --enable-board=intel-quark \
+
+    Note: board "intel-quark" can be replaced "intel-atom-baytrail." or by other valid BSPs.
+
+    $ make fs
+2) deploy the kernel and rootfs on a USB stick and insert a SIM card
+   onto target and boot
+
+4.2 basic NetIFD feature test
+------------
+1) check that ubusd and netifd is running
+    # ps aux | grep netifd
+    # ps aux | grep ubusd
+    Note: if not running, please start it manually
+    # /etc/init.d/ubus start
+    # /etc/init.d/network start
+
+2) check the network interfaces' status on target
+    # ifconfig
+    # ifstatus lan
+    # ifstatus wan
+    # ifstatus wwan
+    # devstatus br-lan
+    # devstatus wlan0
+    # devstatus lo
+    # devstatus eth0
+    # devstatus 3g-wwan
+
+3) bring up and down the interfaces
+    # ifdown lan
+    # ifconfig
+    # ifup lan
+    # ifconfig
+
+    # ifdown wan
+    # ifconfig
+    # ifup wan
+    # ifconfig
+
+    # ifdown wwan
+    # ifconfig
+    # ifup wwan
+    # ifconfig
+    Note: if the interface wwan is not up, make sure you have sim card inserted
+    into the target, and also please check the pppd dialing status
+    # tail -f /var/log/ppp-3g.log
+
+    # wifi down
+    # ifconfig
+    # wifi up
+    # ifconfig
+
+    # ifdown -a
+    # ifconfig
+    # ifup -a
+    # ifconfig
+
+5. NetIFD configuration and customization
+===========================
+The configuration files for NetIFD are placed in /etc/config folder.
+By default, interface "lan" and "wan" are defined in /etc/config/network.
+You can modify /etc/config/network and /etc/config/wireless for your
+own customized network envrionment.
+
+The default /etc/config/wireless may not always work due to various wifi
+cards, you can generate your own wireless config with the following command:
+# rm /etc/config/wireless
+# wifi detect > /etc/config/wireless
+
+then start with:
+# wifi up
+
+The driver specific script is placed in /lib/wifi/<driver>.sh. If you're using
+a different wifi card other than the default one on target, you may need to
+write your own driver specific script and put it in /lib/wifi folder.
+For example, the driver script 'iwlwifi.sh' was modified based on mac80211.sh
+in openwrt.
+
+For wwan, chatscripts are different for various SIM cards. If the current
+chatscript in /etc/chatscripts/ folder is not suitable for your SIM
+card, please modify it first, otherwise wwan connection may not set up
+correctly.
+
+Currently, static, ppp, pppoe, 3g, sconn and dhcp protocol handlers are supported.
+If you want NetIFD to manage devices that use protocols other than the above,
+please follow the protocol handlers examples in /lib/netifd/proto/* to write
+your own protocol handlers.
+
+6.  NetIFD Tech Reference
+=============================
+6.1 netifd
+------------
+http://wiki.openwrt.org/doc/techref/netifd
+
+6.2 ubus
+------------
+http://wiki.openwrt.org/doc/techref/ubus
+
+6.3 uci config spec
+------------
+1) http://wiki.openwrt.org/doc/uci
+2) http://wiki.openwrt.org/doc/uci/network
+3) http://wiki.openwrt.org/doc/uci/wireless

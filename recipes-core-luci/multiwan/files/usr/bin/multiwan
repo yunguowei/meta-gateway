@@ -1,0 +1,404 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# Created by: Junxian.xiao@windirver.com
+# Date: July 28, 2015
+# Copyright (c) 2015 Wind River System, Inc.
+#
+"""
+MultiWan is a package from openwrt, which provides agent script that
+makes Multi-WAN configuration simple, easy and manageable.
+
+The original openwrt version is complete with load balancing, failover
+and an easy to manage traffic ruleset. However, here we implement it as
+a stripped version, just test connectivity, select one active upstream
+interface as default, and swith to next one if the connection is lost.
+"""
+
+import os
+import sys
+import time
+import json
+import logging
+import threading
+import Queue
+import signal
+
+
+class Logger:
+    """ Set special format for MultiWAN, output to file or console.
+    """
+    @staticmethod
+    def config(debug_mode='0'):
+        if debug_mode == 'stdout':
+            logging.basicConfig(level=logging.DEBUG,
+                                format='%(asctime)s %(message)s',
+                                datefmt='%Y-%m-%d %H:%M:%S')
+        elif debug_mode == 'logfile' or debug_mode == '1':
+            logging.basicConfig(level=logging.DEBUG,
+                                format='%(asctime)s %(message)s',
+                                datefmt='%Y-%m-%d %H:%M:%S',
+                                filename='/var/log/multiwan.log')
+        else:
+            logging.basicConfig(level=logging.ERROR,
+                                format='%(message)s')
+
+    @staticmethod
+    def error(log):
+        """ Output error message in red color.
+        """
+        logging.error('\033[31m[ERROR] ' + log + '\033[m')
+
+    @staticmethod
+    def info(log):
+        """ Output normal information message.
+        """
+        logging.info('\033[32m[ INFO] ' + log + '\033[m')
+
+    @staticmethod
+    def debug(log):
+        """ Output normal debug message.
+        """
+        logging.debug('[DEBUG] ' + log)
+
+    @staticmethod
+    def exit(log, errno=1):
+        Logger.config()
+        Logger.error(log)
+        exit(errno)
+
+
+class MultiWanConfig:
+    """ Paser MultiWan uci configuration file.
+    """
+    def __init__(self):
+        self.conf = {'config': {}, 'interfaces': []}
+
+    def load(self):
+        for line in os.popen('uci show multiwan').readlines():
+            key, value = line.split('=')
+            value = value.strip()
+            key += '.section_type' if len(key.split('.')) < 3 else ''
+            conf, section, option = key.split('.')
+            if (option, value) == ('section_type', 'interface'):
+                self.conf[section] = {}
+                self.conf['interfaces'].append(section)
+            else:
+                self.conf[section][option] = value
+
+        return self.conf
+
+
+class WanInterface:
+    """ Real interface status and actions
+    """
+    def __init__(self, interface):
+        self.name = interface
+        self.update()
+
+    def update(self):
+        """ Update interface status and informations
+        """
+        cmd = 'ifstatus %s' % self.name
+        self.status = json.loads(''.join(os.popen(cmd).readlines()))
+        self.ifname = self.get_device()
+        self.ipaddr = self.get_ipaddr()
+        self.gateway = self.get_gateway()
+        self.dns = self.get_dnsserver()
+        Logger.debug('%s: %s, %s, %s, %s' % (self.name,
+                     self.ifname, self.ipaddr, self.gateway, self.dns))
+
+    def get_device(self):
+        return self.status.get('l3_device', None)
+
+    def get_dnsserver(self):
+        return self.status.get('dns-server', None)
+
+    def get_ipaddr(self):
+        try:
+            ipaddr = self.status['ipv4-address'][0]['address']
+        except (IndexError, KeyError):
+            ipaddr = None
+        return ipaddr
+
+    def get_gateway(self):
+        try:
+            gateway = self.status['route'][0]['nexthop']
+        except (IndexError, KeyError):
+            gateway = None
+        return gateway
+
+    def is_active(self):
+        if self.ifname is None or len(self.ifname) == 0:
+            self.update()
+            if self.ifname is None or len(self.ifname) == 0:
+                return False
+
+        cmd = 'ifconfig %s 2>/dev/null | grep -q RUNNING' % self.ifname
+        if os.system(cmd) != 0:
+            return False
+
+        if not self.status['up'] or self.ipaddr is None:
+            self.update()
+            if not self.status['up'] or self.ipaddr is None:
+                return False
+
+        return True
+
+    def update_default_route(self, default=None):
+        if default is None:
+            if self.gateway is not None and self.ifname is not None:
+                default = 'default via %s dev %s' % (self.gateway, self.ifname)
+
+        Logger.debug('%s update_default_route: %s' % (self.name, default))
+        if default:
+            route_table = os.popen('ip route').read()
+
+            # check whether already as default
+            if route_table.find('%s' % default) != -1:
+                return 0
+
+            # Clear default route, maybe more than one by mistake.
+            for line in route_table.splitlines():
+                if line.find('default') != -1:
+                    os.system('ip route del default')
+
+            # Add this interface as default route
+            cmd = 'ip route add %s' % default
+            Logger.info(cmd)
+            return os.system(cmd)
+
+
+class MultiWanMonitor(threading.Thread):
+    """ Interface monitor thread
+    """
+    def __init__(self, iface, mconf, msg_queue):
+        name = '%s-Monitor' % iface
+        threading.Thread.__init__(self, name=name)
+        self.daemon = True
+        self.name = name
+        self.iface = WanInterface(iface)
+        self.queue = msg_queue
+
+        self.health_interval = int(mconf.get('health_interval', 3))
+        self.failover_to = mconf.get('failover_to', None)
+
+        self._thread_status = 'idle'
+        self._health_status = 'unknow'
+
+    def run(self):
+        Logger.info('%s start ...' % self.name)
+        while self._thread_status != 'stop':
+            if self._thread_status == 'idle':
+                time.sleep(1)
+                continue
+
+            # Interface check
+            last_time = time.time()
+            if self.iface.is_active():
+                Logger.debug('%s: interface is running!' % self.iface.name)
+                self._health_status = 'recovery'
+                msg = {'iface': self.iface.name, 'type': self._health_status}
+                self.queue.put(msg)
+            else:
+                Logger.debug('%s: interface is not running!' % self.iface.name)
+                if self._health_status != 'failover':
+                    self._health_status = 'failover'
+                    msg = {'iface': self.iface.name, 'type': self._health_status}
+                    self.queue.put(msg)
+
+            # Continue for the next time
+            delta = last_time + self.health_interval - time.time()
+            Logger.debug('%s: delta time: %f' % (self.iface.name, delta))
+            if delta > 0:
+                time.sleep(delta)
+
+    def thread_wake(self):
+        if self._thread_status != 'wake':
+            Logger.info('%s wake ...' % self.name)
+            self._thread_status = 'wake'
+
+    def thread_idle(self):
+        if self._thread_status != 'idle':
+            Logger.info('%s idle ...' % self.name)
+            self._thread_status = 'idle'
+            self._health_status = 'unknow'
+
+    def thread_stop(self):
+        if self._thread_status != 'stop':
+            Logger.info('%s stop ...' % self.name)
+            self._thread_status = 'stop'
+
+
+class MultiWanDeamon(threading.Thread):
+    """ Daemon to hanlde events from all monitors.
+    """
+    def __init__(self, conf):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self.thread_stop = False
+
+        self.conf = conf
+        self.priority = self.conf['config'].get('priority', 'None')
+        self.dns = self.conf['config'].get('dns', '')
+
+        self.monitors = {}
+        self.failover_chain = []
+        self.queue = Queue.Queue(maxsize=16)
+
+        Logger.debug('priority: %s' % self.priority)
+        Logger.debug('DNS: %s' % self.dns)
+
+
+    def update_resolv(self):
+        # Maybe /etc/resolv.conf will be modified by ppp or udhcpc.
+        # Just add a chance here to recovery this file back.
+        resolv_file = open('/etc/resolv.conf', 'a+')
+        orignal = resolve_file.read()
+        resolve_file.close()
+        if orignal.find('nameserver 127.0.0.1') == -1:
+             resolv_file = open('/etc/resolv.conf', 'w')
+             resolve_file.write('nameserver 127.0.0.1\nsearch lan\n')
+             resolve_file.close()
+
+    def update_dns(self):
+        # Update customer DNS in multiwan configuration file
+        if self.dns is None or len(self.dns) == 0:
+            return 0
+
+        Logger.info('Update customer DNS: %s' % self.dns)
+        title = '# MultiWan'
+        with open('/tmp/resolv.conf.auto', 'a+') as tmp_resolve_file:
+            orignal = tmp_resolve_file.read()
+            if orignal.find(title) == -1:
+                tmp_resolve_file.write('%s\n' % title)
+            for nameserver in self.dns.replace(',', ' ').split():
+                if orignal.find(nameserver) == -1:
+                    Logger.debug('Add dns: %s' % nameserver)
+                    tmp_resolve_file.write('nameserver %s\n' % nameserver)
+
+    def check_failover(self):
+        Logger.info('Checking Interfaces failover chain ...')
+        current_iface = self.priority
+        while current_iface in self.conf['interfaces']:
+            self.failover_chain.append(current_iface)
+            current_iface = self.conf[current_iface].get('failover_to', 'None')
+            if current_iface == self.priority or current_iface == 'disable':
+                return 0
+            elif current_iface == 'None' or current_iface == 'none':
+                return 0
+            elif current_iface in self.failover_chain:
+                Logger.error('failover_to loop without priority interface!')
+                return 1
+        Logger.error('Priority or failover_to interface is invalid!')
+        return 1
+
+    def create_monitors(self):
+        Logger.info('Initializing MultiWan Monitor ...')
+        for i in self.failover_chain:
+            self.monitors[i] = MultiWanMonitor(i, self.conf[i], self.queue)
+            self.monitors[i].start()
+        self.monitors[self.priority].thread_wake()
+
+    def run(self):
+        if self.check_failover() != 0:
+            self.thread_stop = True
+            return 1
+
+        Logger.debug('Failover chain: %s' % self.failover_chain)
+        self.update_dns()
+        self.create_monitors()
+
+        current = self.priority
+        while not self.thread_stop:
+            msg = self.queue.get()
+            Logger.info('Monitor: Get msg %s' % msg)
+
+            if msg['type'] == 'failover' and msg['iface'] == current:
+                # Current interface failover to next
+                Logger.info('Monitor: Switch from %s' % current)
+                next_idx = self.failover_chain.index(current) + 1
+                if next_idx < len(self.failover_chain):
+                    current = self.failover_chain[next_idx]
+                    self.monitors[current].thread_wake()
+            elif msg['type'] == 'recovery':
+                next_idx = self.failover_chain.index(current) + 1
+
+                # if outside [priority, current]
+                if msg['iface'] not in self.failover_chain[:next_idx]:
+                    continue
+
+                # if it's current
+                if msg['iface'] == current:
+                    Logger.info('Monitor: Maintain %s' % current)
+                    self.monitors[current].iface.update_default_route()
+                    continue
+
+                # if between [priority, current)
+                current = msg['iface']
+                self.monitors[current].iface.update_default_route()
+                next_idx = self.failover_chain.index(current) + 1
+                for i in self.failover_chain[next_idx:]:
+                    self.monitors[i].thread_idle()
+                Logger.info('Monitor: Switched to %s' % current)
+
+
+    def stop(self):
+        # Stop all Monitor threads at first
+        for i in self.monitors.keys():
+            self.monitors[i].thread_stop()
+
+        # Stop deamon thread
+        Logger.info('Stoping MultiWan Monitor daemon ...')
+        self.thread_stop = True
+
+    def wait(self):
+        while not self.thread_stop:
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        Logger.exit('Usage: %s start|stop' % os.path.basename(sys.argv[0]))
+
+    pid_file = '/var/run/multiwan.pid'
+
+    if sys.argv[1] == 'start':
+        if os.path.isfile(pid_file):
+            Logger.exit('Pid file exist, Maybe already started!')
+
+        conf = MultiWanConfig().load()
+        Logger.config(debug_mode=conf['config'].get('debug', '0'))
+
+        enabled = conf['config'].get('enabled', '1')
+        if enabled == '0':
+            Logger.error('MultiWAN is disabled!')
+            exit(1)
+
+        multiwan_deamon = MultiWanDeamon(conf)
+
+        def sig_handler(sig_num, frame):
+            Logger.error('Canceled because of signal %d' % sig_num)
+            multiwan_deamon.stop()
+            return 0
+
+        signal.signal(signal.SIGINT, sig_handler)
+        signal.signal(signal.SIGTERM, sig_handler)
+
+        multiwan_deamon.start()
+        with open(pid_file, 'w') as f:
+            f.write('%s' % os.getpid())
+
+        multiwan_deamon.wait()
+        os.remove(pid_file)
+
+    elif sys.argv[1] == 'stop':
+        if not os.path.isfile(pid_file):
+            Logger.exit('No pid file found, Maybe already stopped!', errno=0)
+
+        with open(pid_file, 'r') as f:
+            os.system('kill -9 %s 2>/dev/null' % f.read())
+
+        os.remove(pid_file)
+
+    exit(0)

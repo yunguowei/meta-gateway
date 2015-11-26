@@ -1,0 +1,13 @@
+[Unit]
+Description=U-bus Daemon
+Before=sysinit.target shutdown.target systemd-update-done.service
+After=systemd-modules-load.service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/sbin/ubusd
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

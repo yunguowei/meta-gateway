@@ -1,0 +1,9 @@
+
+config 'general' 'general'
+	option 'enable' '0'
+	option 'reponum' '1'
+
+config 'repos'
+	option 'url' ''
+	option 'status' 'OFF'
+	option 'name' 'demo-channel'
