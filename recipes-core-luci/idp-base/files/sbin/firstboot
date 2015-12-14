@@ -34,7 +34,7 @@ tmp=/tmp/config.$$
 	rm -rf $tmp 2>/dev/null
 	mkdir -p $tmp 2>/dev/null
 	date > $tmp/config.date
-	echo "WR_IntelligentDevice_Default" > $tmp/config.name
+	echo "PulsarGateway_Default" > $tmp/config.name
 	cat /etc/board_name > $tmp/config.boardtype
 	for file in $copy_files
 	do
