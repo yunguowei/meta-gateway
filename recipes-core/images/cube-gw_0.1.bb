@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d
                     file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
 
-CUBE_DOM_GATEWAY_EXTRA_INSTALL ?= ""
+CUBE_DOM_GW_EXTRA_INSTALL ?= ""
 
 IMAGE_FEATURES += "package-management doc-pkgs"
 IMAGE_FSTYPES = "tar.bz2"
@@ -50,7 +50,7 @@ IMAGE_INSTALL += "idp-base"
 IMAGE_INSTALL += "idp-boot"
 
 # Extras as defined externally
-IMAGE_INSTALL += "${CUBE_DOM_GATEWAY_EXTRA_INSTALL}"
+IMAGE_INSTALL += "${CUBE_DOM_GW_EXTRA_INSTALL}"
 
 inherit core-image
 inherit builder-base
