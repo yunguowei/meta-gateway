@@ -5,6 +5,7 @@ SECTION = "webconsole"
 PR = "r17"
 
 SRC_URI = "http://download.windriver.org/proprietary-downloads/luci-${PV}-${PR}.tar.gz \
+	file://version.lua \
 	file://etc/config/system \
 	file://no-auto-channel-for-wifi.patch"
 
@@ -64,6 +65,9 @@ EXTRA_OEMAKE = "\
 	LUA_LIBRARYDIR='${libdir}/lua/5.1' \
 "
 
+do_configure_append() {
+	cp ${WORKDIR}/version.lua ${S}/modules/base/luasrc/version.lua
+}
 do_install() {
 	for i in ${LUCI_SUBDIRS}; do
 		cp -rf $i/dist/* ${D}
