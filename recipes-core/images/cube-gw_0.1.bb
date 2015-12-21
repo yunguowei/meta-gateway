@@ -30,6 +30,7 @@ IMAGE_INSTALL += "packagegroup-core-boot \
 IMAGE_INSTALL += "hostapd hostap-utils"
 IMAGE_INSTALL += "wireless-tools wpa-supplicant"
 IMAGE_INSTALL += "linux-firmware"
+IMAGE_INSTALL += "bluez5"
 
 # GW Protocols
 IMAGE_INSTALL += "dnsmasq"
