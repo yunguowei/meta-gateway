@@ -1,0 +1,78 @@
+# PPPD configuration for rogers
+# 
+
+debug
+debug
+debug
+
+# Log File
+logfile /var/log/ppp.log
+
+/dev/ttyACM0
+
+
+# Baudrate  
+115200
+
+# lock for use by this PPPD process only
+lock
+
+# Idle time before closing connection (in seconds)
+idle 600
+
+# any user can start the connection
+# noauth
+
+nomultilink
+
+# if we have an existing default route,
+# replace it with the one provided
+# Note FRI pppd does not support the following
+# replacedefaultroute
+
+# make this PPP link the default route
+defaultroute
+
+ipcp-restart 7
+ipcp-accept-local
+ipcp-accept-remote
+lcp-echo-interval 0
+lcp-echo-failure 999
+
+# user model control lines (CTS / RTS)
+modem
+
+# normal handshaking
+crtscts
+
+# don't suggest an IP address, use one provided by the network
+noipdefault
+
+# disable Compression Control Protocol
+noccp
+
+# disable address control / compression in both directions
+noaccomp
+
+# no VJ compression for PPP link
+novj
+
+# get DNS addresses from the operator
+usepeerdns
+
+# no exit once a connection has been made and terminated
+persist
+
+# may be required to authenticate 
+# for rogers, wapuser1/wap
+user wapuser1
+password wap
+
+# set dryrun to dump settings
+# dryrun
+
+# fire up chat 
+# -v verbose mode
+# -s redirect logs to stderr
+connect '/usr/sbin/chat -v -s -f /etc/ppp/chat/rogers_chat 2> /var/log/chat.log'
+

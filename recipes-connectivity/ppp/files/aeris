@@ -1,0 +1,45 @@
+# Debug info from pppd
+debug debug debug
+logfile /var/log/ppp.log
+#kdebug 4
+# Most phones don't reply to LCP echos
+lcp-echo-failure 3
+lcp-echo-interval 3
+# Keep pppd attached to the terminal
+# Comment this to get daemon mode pppd
+nodetach
+# The chat script (be sure to edit that file, too!)
+connect "/usr/sbin/chat -v -f /etc/ppp/chat/aeris_chat"
+# Serial Device to which the modem is connected
+/dev/ttyACM0
+# Serial port line speed
+115200
+dump
+# The phone is not required to authenticate
+#noauth
+user dummy
+name dummy
+password dummy
+# If you want to use the HSDPAGPRS link as your gateway
+defaultroute
+# pppd must not propose any IP address to the peer
+#noipdefault
+ipcp-accept-local
+ipcp-accept-remote
+# Keep modem up even if connection fails
+#persist
+# Hardware flow control
+crtscts
+# Ask the peer for up to 2 DNS server addresses
+usepeerdns
+# No ppp compression
+novj
+nobsdcomp
+novjccomp
+nopcomp
+noaccomp
+# For sanity, keep a lock on the serial line
+lock
+# Show password in debug messages
+show-password
+

@@ -1,0 +1,22 @@
+debug debug debug
+logfile /var/log/ppp.log
+/dev/ttyUSB3 115200 crtscts
+connect-delay 5000
+defaultroute
+noipdefault
+ipcp-accept-local
+ipcp-accept-remote
+noauth
+novj
+nomultilink
+defaultroute
+ipcp-restart 7
+lcp-echo-interval 0
+lcp-echo-failure 999
+noauth
+noaccomp
+noccp
+novj
+usepeerdns
+persist
+connect "/usr/sbin/chat -v -f /etc/ppp/chat/VZW_Telit_chat -E" 

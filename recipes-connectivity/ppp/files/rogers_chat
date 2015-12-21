@@ -1,0 +1,75 @@
+#
+# 
+# Rogers Data Connection
+#
+# APN: internet.com
+# Username: wapuser1
+# Password: wap
+# MCC: 302
+# MNC: 72 (If that doesn't work try 720, its already filled in, leave it at what it is)
+# 
+# Name: Rogers MMS
+# APN: media.com
+# Username: media
+# Password: mda01
+# Server: 172.25.0.107
+# MMSC :http://mms.gprs.rogers.com
+# MMS Proxy: 10.128.1.69
+# MMS Port: 80
+# MCC: 302
+# MNC: 72 (If that doesn't work try 720, its already filled in, leave it at what it is)
+# APN Type: mms
+
+SAY "Initializing Rogers Data Connection... \n"
+
+ABORT BUSY 
+ABORT VOICE 
+ABORT DELAYED 
+ABORT ERROR
+ABORT 'NO CARRIER' 
+ABORT 'NO DIALTONE' 
+ABORT 'NO DIAL TONE' 
+ABORT 'NO ANSWER' 
+
+TIMEOUT 120
+
+# reset the modem
+SAY "Modem reset ...\n"
+'' 'ATZ'
+
+# CFUN=0 disables the GSM software stack
+# OK 'AT+CFUN=0'
+
+# CFUN=1 restarts the GSM software stack
+OK 'AT+CFUN=1'
+
+REPORT CONNECT
+
+SAY "Setting PIN ... \n"
+# set pin number on SIM
+# OK 'AT+CPIN=5412'
+
+#! find the provider
+#! OK 'AT+COPS?'
+
+#! get mmc and mnc numbers
+#! OK 'AT+COPS=0,2'
+
+#! get list of service providers
+#! OK 'AT+COPS=?'
+
+#! OK 'AT+CGDCONT=?'  for rogers, this results in:
+#  +CGDCONT: 1,"IP","internet.com","0.0.0.0",0,0
+#  +CGDCONT: 2,"IP","isp.rogers","0.0.0.0",0,0
+# choose the appropriate line below:
+
+SAY "Setting CGDCONT ... "
+OK 'AT+CGDCONT=1,"IP","internet.com"'
+# or 
+#OK 'AT+CGDCONT=2,"IP","isp.rogers"'
+
+OK 'AT'
+SAY "Dialing... \n"
+OK 'ATD*99***1#'
+CONNECT 
+
