@@ -15,10 +15,10 @@
 # fi
 
 # Find eth1 interface and add avaliable eth1 into lan bridge
-eth1_get=`ifconfig eth2`
+eth1_get=`ifconfig eth1`
 
 [ -n "$eth1_get" ] && {
-    sed -i "s/wlan0/eth2 wlan0/g" /etc/config/network
+    sed -i "s/wlan0/eth1 wlan0/g" /etc/config/network
 }
 
 # create softlink for pptp init script
