@@ -1,6 +1,7 @@
 [Unit]
 Description=IDP Customer Run Once Function
 After=network-online.target
+Before=lighttpd.service
 
 [Service]
 ExecStart=/etc/runonce/runonce.sh
