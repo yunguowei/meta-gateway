@@ -50,6 +50,7 @@ IMAGE_INSTALL += "firewall"
 IMAGE_INSTALL += "multiwan"
 IMAGE_INSTALL += "idp-base"
 IMAGE_INSTALL += "idp-boot"
+IMAGE_INSTALL += "comgt"
 
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_GFX_EXTRA_INSTALL}"

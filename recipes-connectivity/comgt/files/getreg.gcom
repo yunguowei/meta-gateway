@@ -1,0 +1,27 @@
+  opengt
+  set com 115200n81
+  set senddelay 0.05
+  waitquiet 2 0.5
+  let c = 0
+:waitreg
+  send "AT+CREG?^m"
+  waitfor 2 "+CREG: 0,1","+CREG: 0,5"
+  if % = -1 goto regagain
+  if % = 0 goto registered
+  if % = 1 goto registered
+:regagain
+  if c > 120 goto regtimeout
+  let c=c+2
+  goto waitreg
+:regtimeout
+  exit 1
+:registered
+  waitquiet 1 0.1
+  send "AT+COPS?^m"
+  get 2 "^m" $s
+  get 2 "^m" $s
+  let a=len($s)
+  let b=a-12
+  if b < 1 goto regtimeout
+  let $c=$right($s,b)
+  print $c

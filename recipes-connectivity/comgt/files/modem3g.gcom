@@ -1,0 +1,60 @@
+opengt
+ set com 115200n81
+ set comecho off
+ set senddelay 0.02
+ waitquiet 0.2 0.2
+ flash 0.1
+
+:startsn
+ send "AT+CGSN^m"
+ get 1 "^m" $s
+ get 1 "^m" $s
+ let x = len($s)
+ if x<2 goto startrev
+ let $s = $right($s, x-1)
+ print "modem|SerialNumber|",$s,"\n"
+ get 1 "^m" $s
+
+:startrev
+ get 1 "^m" $s
+ send "AT+CGMR^m"
+ get 1 "^m" $s
+ get 1 "^m" $s
+ let x = len($s)
+ if x<2 goto startimsi
+ let $s = $right($s, x-1)
+ print "modem|Rev|",$s,"\n"
+ get 1 "^m" $s
+
+:startimsi
+ get 1 "^m" $s
+ send "AT+CIMI^m"
+ get 1 "^m" $s
+ get 1 "^m" $s
+ let x = len($s)
+ if x<15 goto continue
+ let $s = $right($s, x-1)
+ print "sim|IMSI|",$s,"\n"
+ get 1 "^m" $s
+
+:startreg
+ get 1 "^m" $s
+ send "AT+CREG?^m"
+ waitfor 1 "+CREG: 0,1","+CREG: 0,5"
+ if % = -1 goto continue
+ get 1 "^m" $s
+ waitquiet 0.5 0.1
+ send "AT+COPS?^m"
+ get 1 "^m" $s
+ get 1 "^m" $s
+ let x=len($s)
+ if x < 16 goto continue
+ let b=x-13
+ let $r = $right($s, b)
+ let x = len($r)
+ let b=x-3
+ let $s = $left($r,b)
+ print "sim|Registor|",$s,"\n"
+
+:continue
+ exit 0
