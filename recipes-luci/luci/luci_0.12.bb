@@ -2,15 +2,15 @@ SUMMARY = "LUCI Web Interface"
 DESCRIPTION = "Standard Web Interface including full admin features."
 LICENSE = "GPLv2"
 SECTION = "webconsole"
-PR = "r17"
+PR = "r23"
 
 SRC_URI = "http://download.windriver.org/proprietary-downloads/luci-${PV}-${PR}.tar.gz \
 	file://version.lua \
 	file://etc/config/system \
 	file://no-auto-channel-for-wifi.patch"
 
-SRC_URI[md5sum] = "ab9fd0189331b689b65fe700cd3d49c8"
-SRC_URI[sha256sum] = "e0c38fbb026efefb781667172ed0f5fc3d14fe67c3255a0c41bb8d9b9882b55c"
+SRC_URI[md5sum] = "09b542820ca206da550fd4b7cc4ae2ec"
+SRC_URI[sha256sum] = "20e48fa4cc87af7220d7202302fac45d5249b3e05fe0a1afe2d287b3ae344762"
 
 DEPENDS = "lua-native iwinfo uci lua libubox"
 
