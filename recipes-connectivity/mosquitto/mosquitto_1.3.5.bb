@@ -20,7 +20,7 @@ SRC_URI[sha256sum] = "16eb3dbef183827665feee9288362c7352cd016ba04ca0402a0ccf857d
 
 do_install() {
     oe_runmake install DESTDIR=${D}
-    install -d ${D}${libbir}
+    install -d ${D}${libdir}
     install -m 0644 lib/libmosquitto.a ${D}${libdir}/
 
     install -d ${D}${systemd_unitdir}/system/
