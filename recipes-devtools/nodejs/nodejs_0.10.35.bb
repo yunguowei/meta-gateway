@@ -38,7 +38,7 @@ do_install () {
 
 do_install_append_class-target () {
     # install node-gyp node hedaers in /usr/include/node-gyp/
-    cd ${D}/${libdir}/node_modules/npm/node_modules/node-gyp/
+    cd ${D}/${nonarch_libdir}/node_modules/npm/node_modules/node-gyp/
     export HOME=${D}/usr/include/node-gyp
     sed -i 's/\.node-gyp//' lib/node-gyp.js
 
@@ -56,11 +56,11 @@ do_install_append_class-native() {
     # /usr/bin/npm is symlink to /usr/lib/node_modules/npm/bin/npm-cli.js
     # use sed on npm-cli.js because otherwise symlink is replaced with normal file and
     # npm-cli.js continues to use old shebang
-    sed "1s^.*^#\!/usr/bin/env node^g" -i ${D}${libdir}/node_modules/npm/bin/npm-cli.js
+    sed "1s^.*^#\!/usr/bin/env node^g" -i ${D}${nonarch_libdir}/node_modules/npm/bin/npm-cli.js
 }
 
 do_install_append_class-target() {
-    sed "1s^.*^#\!${bindir}/env node^g" -i ${D}${libdir}/node_modules/npm/bin/npm-cli.js
+    sed "1s^.*^#\!${bindir}/env node^g" -i ${D}${nonarch_libdir}/node_modules/npm/bin/npm-cli.js
 }
 
 pkg_postinst_${PN} () {
@@ -79,7 +79,7 @@ RDEPENDS_${PN} = "curl"
 RDEPENDS_${PN}_class-native = ""
 
 PACKAGES += "${PN}-npm"
-FILES_${PN}-npm = "${libdir}/node_modules ${bindir}/npm"
+FILES_${PN}-npm = "${nonarch_libdir}/node_modules ${bindir}/npm"
 RDEPENDS_${PN}-npm = "python-shell python-datetime python-subprocess python-crypt python-textutils \
                       python-netclient python-ctypes python-misc python-compiler python-multiprocessing \
                       bash"
