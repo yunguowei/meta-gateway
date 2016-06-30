@@ -55,4 +55,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/netifd-systemd-wrapper ${D}/${base_sbindir}
 }
 
+CONFFILES_${PN} += "${sysconfdir}/config/network"
+CONFFILES_${PN} += "${sysconfdir}/config/dhcp"
+
 FILES_${PN} = "${sysconfdir}/* ${base_sbindir}/* /etc/* /lib/*"
