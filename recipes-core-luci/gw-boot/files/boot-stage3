@@ -1,0 +1,14 @@
+#!/bin/sh /etc/rc.common
+
+START=40
+STOP=98
+
+scan_hardwares() {
+	/lib/network/detect-modem.py
+}
+
+start() {
+	scan_hardwares
+
+	return 0
+}

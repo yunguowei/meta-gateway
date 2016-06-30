@@ -1,0 +1,27 @@
+#!/bin/sh /etc/rc.common
+
+START=40
+STOP=98
+
+start() {
+	[ -e /etc/udev/rules.d/80-net-setup-link.rules ] || {
+		ln -sf /dev/null /etc/udev/rules.d/80-net-setup-link.rules
+	}
+	[ -f /proc/net/vlan/config ] && vconfig set_name_type DEV_PLUS_VID_NO_PAD
+
+	rm -rf /var/volatile/state >/dev/null 2>&1
+	rm /var/state >/dev/null 2>&1
+	mkdir -p /var/volatile/state
+	cd /var
+	ln -sf volatile/state state
+	mkdir -p /tmp/.uci
+	chmod 0700 /tmp/.uci
+	touch /var/log/wtmp
+	touch /var/log/lastlog
+	touch /tmp/resolv.conf.auto
+	ln -sf /tmp/resolv.conf.auto /tmp/resolv.conf
+
+	load_modules /etc/modules.d/*
+
+	return 0
+}

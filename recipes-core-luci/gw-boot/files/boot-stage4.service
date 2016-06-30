@@ -1,0 +1,12 @@
+[Unit]
+Description=Wind River Gateway Initialization (stage 4).
+Before=sysinit.target shutdown.target systemd-update-done.service
+After=systemd-udevd.service run-postinsts.service systemd-remount-fs.service systemd-tmpfiles-setup.service tmp.mount
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/boot-stage4 start
+
+[Install]
+WantedBy=sysinit.target

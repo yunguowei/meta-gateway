@@ -1,0 +1,57 @@
+#!/bin/sh /etc/rc.common
+
+START=40
+STOP=98
+
+start() {
+	#restore the last booting generated wifi config file
+	[ -f /etc/config/wireless ] && {
+		mv /etc/config/wireless /etc/config/old-wireless
+	}
+
+	/sbin/wifi detect > /tmp/wireless.tmp
+	[ -s /tmp/wireless.tmp ] && {
+		[ -f /etc/config/old-wireless ] && {
+			mv /etc/config/old-wireless /etc/config/wireless
+		} || {
+			cat /tmp/wireless.tmp >> /etc/config/wireless
+		}
+		chmod 0600 /etc/config/wireless
+	}
+	rm -f /tmp/wireless.tmp
+
+	#delete the last booting generated wifi config file
+	[ -f /etc/config/old-wireless ] && {
+		rm -f /etc/config/old-wireless
+	}
+
+	#remove wlan from default bridge interface if there is no wifi hardware device
+	[ -f /etc/config/wireless ] || {
+		uci set network.lan.ifname="$(uci get network.lan.ifname | sed "s/wlan[0-9]//g")"
+	}
+
+	#update the device path/macaddr in case the /etc/conf/wireless
+	#file is saved or copied from another target.
+	#Please see also /lib/wifi/mac80211.sh in detail.
+	[ -f /etc/config/wireless ] && {
+		local dev_path old_path dev_mac old_mac
+
+		if [ -x /usr/bin/readlink ] ; then
+			old_path="$(uci -q get wireless.@wifi-device[0].path)"
+			dev_path="$(readlink -f /sys/class/ieee80211/phy0/device)"
+			dev_path="${dev_path##/sys/devices/}"
+			[ "$dev_path" != "$old_path" ] && {
+				uci -q set  wireless.@wifi-device[0].path="$dev_path"
+			}
+		else
+			old_mac="$(uci -q get wireless.@wifi-device[0].macaddr)"
+			dev_mac="$(cat /sys/class/ieee80211/phy0/macaddress)"
+			[ "$dev_mac" != "$old_mac" ] && {
+				uci -q set  wireless.@wifi-device[0].macaddr="$dev_mac"
+			}
+		fi
+		uci commit wireless
+	}
+
+	return 0
+}

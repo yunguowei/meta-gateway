@@ -1,0 +1,12 @@
+[Unit]
+Description=Wind River Gateway Initialization (stage 2).
+Before=netifd.service shutdown.target
+After=dbus.service systemd-udev-trigger.service run-postinsts.service systemd-remount-fs.service systemd-tmpfiles-setup.service tmp.mount
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/boot-stage2 start
+
+[Install]
+WantedBy=netifd.service
