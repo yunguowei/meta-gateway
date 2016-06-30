@@ -10,7 +10,7 @@ system_config() {
 
 	local hostname conloglevel
 
-	config_get hostname "$cfg" hostname 'WR-Gateway'
+	config_get hostname "$cfg" hostname 'PulsarGateway'
 	echo "$hostname" > /proc/sys/kernel/hostname
 
 	config_get conloglevel "$cfg" conloglevel
