@@ -1,0 +1,50 @@
+From c5a9c00a801c182610c10c5452f00973f98d5220 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Mon, 27 Jun 2016 09:51:26 +0800
+Subject: [PATCH] Fixed scan issue when connect to an non-exist AP.
+
+There is a wrong assume for iwinfo to parse the scan result
+after sending 'SCAN_RESULTS' command. 'WPS-AP-AVAILABLE' event
+got after 'SCAN_RESULTS', it's ok to ignore this event and
+receive the scan result again.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ iwinfo_nl80211.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/iwinfo_nl80211.c b/iwinfo_nl80211.c
+index e2fdd67..5fe7ee3 100644
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -2225,9 +2225,17 @@ static int nl80211_get_scanlist_wpactl(const char *ifname, char *buf, int *len)
+ 		}
+ 	}
+ 
+-	/* receive and parse scan results if the wait above didn't time out */
+ 	if (ready && nl80211_wpactl_recv(sock, reply, sizeof(reply)) > 0)
+ 	{
++		/*<3>WPS-AP-AVAILABLE received after SCAN_RESULT, ignore it*/
++		/*and receive the SCAN_RESULT again*/
++		if ((reply[0] == '<') && (strstr(reply, "WPS-AP-AVAILABLE")))
++                {
++			if (nl80211_wpactl_recv(sock, reply, sizeof(reply)) <= 0)
++				goto out;
++                }
++
++		/* receive and parse scan results if the wait above didn't time out */
+ 		nl80211_get_quality_max(ifname, &qmax);
+ 
+ 		for (line = strtok_r(reply, "\n", &pos);
+@@ -2307,7 +2315,7 @@ static int nl80211_get_scanlist_wpactl(const char *ifname, char *buf, int *len)
+ 		*len = count * sizeof(struct iwinfo_scanlist_entry);
+ 	}
+ 
+-	close(sock);
++out:	close(sock);
+ 	unlink(local.sun_path);
+ 
+ 	return (count >= 0) ? 0 : -1;
+-- 
+1.9.1
+

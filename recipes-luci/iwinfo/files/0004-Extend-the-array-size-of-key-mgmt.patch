@@ -1,0 +1,30 @@
+From c4b6a2363ecfbacc80a1fccec970582371e6d46c Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Wed, 18 May 2016 15:24:07 +0800
+Subject: [PATCH] Extend the array size to fetch full key_mgmt info string.
+
+Array size of wpa_key_mgmt is not enough and can't fetch
+the full query string which caused the following wrong
+parse.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ iwinfo_nl80211.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/iwinfo_nl80211.c b/iwinfo_nl80211.c
+index b913b9d..f947bf0 100644
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -1452,7 +1452,7 @@ static int nl80211_check_wepkey(const char *key)
+ 
+ static int nl80211_get_encryption(const char *ifname, char *buf)
+ {
+-	char wpa[2], wpa_key_mgmt[16], wpa_pairwise[16], wpa_groupwise[16];
++	char wpa[2], wpa_key_mgmt[32], wpa_pairwise[16], wpa_groupwise[16];
+ 	char auth_algs[2], wep_key0[27], wep_key1[27], wep_key2[27], wep_key3[27];
+ 
+ 	struct iwinfo_crypto_entry *c = (struct iwinfo_crypto_entry *)buf;
+-- 
+1.9.1
+

@@ -1,0 +1,36 @@
+From eaf24d2b0da2cb1a4fe1740f9b9a7b7a3b6b2ee6 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Thu, 2 Jun 2016 16:25:35 +0800
+Subject: [PATCH] Filter no IR and radar detection channel into restricted
+ list.
+
+The no IR and radar detection channels should also be taken
+as restricted channels.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ iwinfo_nl80211.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/iwinfo_nl80211.c b/iwinfo_nl80211.c
+index 3f8df41..e2fdd67 100644
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -2432,10 +2432,10 @@ static int nl80211_get_freqlist_cb(struct nl_msg *msg, void *arg)
+ 			e->mhz = nla_get_u32(freqs[NL80211_FREQUENCY_ATTR_FREQ]);
+ 			e->channel = nl80211_freq2channel(e->mhz);
+ 
+-			e->restricted = (
+-				freqs[NL80211_FREQUENCY_ATTR_NO_IR] &&
+-				!freqs[NL80211_FREQUENCY_ATTR_RADAR]
+-			) ? 1 : 0;
++			if (freqs[NL80211_FREQUENCY_ATTR_NO_IR])
++				e->restricted = 1;
++			else
++				e->restricted = 0;
+ 
+ 			e++;
+ 			arr->count++;
+-- 
+1.9.1
+

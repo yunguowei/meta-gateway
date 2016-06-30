@@ -1,0 +1,52 @@
+From fd3fef17e41043317ad4c512ffb159bad11d7646 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Tue, 3 May 2016 16:33:58 +0800
+Subject: [PATCH] Fixed the link issue of the library iwinfo and libiwinfo.
+
+When loading iwinfo.so and libiwinfo.so, there are errors
+like:"undefined symbol:xxx", the reason is missing the dependency
+for libnl-3 and libnl-3-genl, fixed this now.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ Makefile | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 16b0c75..377c34e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -7,7 +7,7 @@ IWINFO_LIB_LDFLAGS = $(LDFLAGS) -shared
+ IWINFO_LIB_OBJ     = iwinfo_utils.o iwinfo_wext.o iwinfo_wext_scan.o iwinfo_lib.o
+ 
+ IWINFO_LUA         = iwinfo.so
+-IWINFO_LUA_LDFLAGS = $(LDFLAGS) -shared -L. -liwinfo -llua
++IWINFO_LUA_LDFLAGS = $(LDFLAGS) -shared -L. -liwinfo -llua -lnl-3 -lnl-genl-3
+ IWINFO_LUA_OBJ     = iwinfo_lua.o
+ 
+ IWINFO_CLI         = iwinfo
+@@ -27,8 +27,8 @@ endif
+ 
+ ifneq ($(filter nl80211,$(IWINFO_BACKENDS)),)
+ 	IWINFO_CFLAGS      += -DUSE_NL80211
+-	IWINFO_CLI_LDFLAGS += -lnl-tiny
+-	IWINFO_LIB_LDFLAGS += -lnl-tiny
++	IWINFO_CLI_LDFLAGS += -lnl-genl-3
++	IWINFO_LIB_LDFLAGS += -lnl-genl-3
+ 	IWINFO_LIB_OBJ     += iwinfo_nl80211.o
+ endif
+ 
+@@ -37,8 +37,8 @@ endif
+ 	$(CC) $(IWINFO_CFLAGS) $(FPIC) -c -o $@ $<
+ 
+ compile: clean $(IWINFO_LIB_OBJ) $(IWINFO_LUA_OBJ) $(IWINFO_CLI_OBJ)
+-	$(CC) $(IWINFO_LDFLAGS) $(IWINFO_LIB_LDFLAGS) -o $(IWINFO_LIB) $(IWINFO_LIB_OBJ)
+-	$(CC) $(IWINFO_LDFLAGS) $(IWINFO_LUA_LDFLAGS) -o $(IWINFO_LUA) $(IWINFO_LUA_OBJ)
++	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_LIB) $(IWINFO_LIB_OBJ) $(IWINFO_LIB_LDFLAGS)
++	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_LUA) $(IWINFO_LUA_OBJ) $(IWINFO_LUA_LDFLAGS)
+ 	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_CLI) $(IWINFO_CLI_OBJ) $(IWINFO_CLI_LDFLAGS)
+ 
+ clean:
+-- 
+1.9.1
+

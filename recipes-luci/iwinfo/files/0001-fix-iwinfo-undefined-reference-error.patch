@@ -1,0 +1,51 @@
+From a6e72f5a8e7dbd3d9ad617860443c0ea69580423 Mon Sep 17 00:00:00 2001
+From: De Huo <De.Huo@windriver.com>
+Date: Wed, 6 Apr 2016 10:37:25 +0800
+Subject: [PATCH] Fix iwinfo undefined reference error
+
+Fix defect about undefined reference to as below.
+
+| x86_64-wrs-linux-gcc -m64 -march=corei7 -mtune=corei7 -mfpmath=sse -msse4.2 --sysroot=/disk3/project/gwpcommon/bitbake_build/tmp/sysroots/intel-x86-64 -luci -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -L. -liwinfo -lnl-tiny -o iwinfo iwinfo_cli.o
+| iwinfo_cli.o: In function `print_txpwrlist':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:634: undefined reference to `iwinfo_dbm2mw'
+| iwinfo_cli.o: In function `print_mode':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:411: undefined reference to `IWINFO_OPMODE_NAMES'
+| iwinfo_cli.o: In function `print_type':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:320: undefined reference to `iwinfo_type'
+| iwinfo_cli.o: In function `print_countrylist':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:744: undefined reference to `IWINFO_ISO3166_NAMES'
+| iwinfo_cli.o: In function `print_scanlist':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:584: undefined reference to `IWINFO_OPMODE_NAMES'
+| iwinfo_cli.o: In function `main':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:865: undefined reference to `iwinfo_backend'
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:842: undefined reference to `iwinfo_backend_by_name'
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:914: undefined reference to `iwinfo_finish'
+| iwinfo_cli.o: In function `print_htmodelist':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:767: undefined reference to `IWINFO_HTMODE_NAMES'
+| iwinfo_cli.o: In function `main':
+| /disk3/project/gwpcommon/bitbake_build/tmp/work/corei7-64-wrs-linux/iwinfo/1.0-r0/git/iwinfo_cli.c:827: undefined reference to `iwinfo_backend'
+| collect2: error: ld returned 1 exit status
+| Makefile:40: recipe for target 'compile' failed
+
+
+Signed-off-by: De, Huo <de.huo@windriver.com>
+---
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 60341f7..16b0c75 100644
+--- a/Makefile
++++ b/Makefile
+@@ -39,7 +39,7 @@ endif
+ compile: clean $(IWINFO_LIB_OBJ) $(IWINFO_LUA_OBJ) $(IWINFO_CLI_OBJ)
+ 	$(CC) $(IWINFO_LDFLAGS) $(IWINFO_LIB_LDFLAGS) -o $(IWINFO_LIB) $(IWINFO_LIB_OBJ)
+ 	$(CC) $(IWINFO_LDFLAGS) $(IWINFO_LUA_LDFLAGS) -o $(IWINFO_LUA) $(IWINFO_LUA_OBJ)
+-	$(CC) $(IWINFO_LDFLAGS) $(IWINFO_CLI_LDFLAGS) -o $(IWINFO_CLI) $(IWINFO_CLI_OBJ)
++	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_CLI) $(IWINFO_CLI_OBJ) $(IWINFO_CLI_LDFLAGS)
+ 
+ clean:
+ 	rm -f *.o $(IWINFO_LIB) $(IWINFO_LUA) $(IWINFO_CLI)
+-- 
+1.7.9.5
+

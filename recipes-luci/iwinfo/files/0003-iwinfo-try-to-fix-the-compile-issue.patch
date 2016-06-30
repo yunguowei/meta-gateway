@@ -1,0 +1,37 @@
+From 91fb6ea0b9b8d22952cc4b6fa6099a8e5a286c53 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Tue, 10 May 2016 16:26:58 +0800
+Subject: [PATCH] iwinfo: Try to fix the compile issue.
+
+Sometimes there is the below error during compile:
+"error: iwinfo_utils.o: No such file or directory"
+This fix removed the 'clean' task from task compile's
+depends.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 377c34e..36e3d49 100644
+--- a/Makefile
++++ b/Makefile
+@@ -36,10 +36,10 @@ endif
+ %.o: %.c
+ 	$(CC) $(IWINFO_CFLAGS) $(FPIC) -c -o $@ $<
+ 
+-compile: clean $(IWINFO_LIB_OBJ) $(IWINFO_LUA_OBJ) $(IWINFO_CLI_OBJ)
+-	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_LIB) $(IWINFO_LIB_OBJ) $(IWINFO_LIB_LDFLAGS)
+-	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_LUA) $(IWINFO_LUA_OBJ) $(IWINFO_LUA_LDFLAGS)
+-	$(CC) $(IWINFO_LDFLAGS) -o $(IWINFO_CLI) $(IWINFO_CLI_OBJ) $(IWINFO_CLI_LDFLAGS)
++compile: $(IWINFO_LIB_OBJ) $(IWINFO_LUA_OBJ) $(IWINFO_CLI_OBJ)
++	$(CC) -o $(IWINFO_LIB) $(IWINFO_LIB_OBJ) $(IWINFO_LIB_LDFLAGS) $(IWINFO_LDFLAGS)
++	$(CC) -o $(IWINFO_LUA) $(IWINFO_LUA_OBJ) $(IWINFO_LUA_LDFLAGS) $(IWINFO_LDFLAGS)
++	$(CC) -o $(IWINFO_CLI) $(IWINFO_CLI_OBJ) $(IWINFO_CLI_LDFLAGS) $(IWINFO_LDFLAGS)
+ 
+ clean:
+ 	rm -f *.o $(IWINFO_LIB) $(IWINFO_LUA) $(IWINFO_CLI)
+-- 
+1.9.1
+

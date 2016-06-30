@@ -1,0 +1,58 @@
+From 46afab020a08791a986c721040a4bbf6a4ee1e30 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Fri, 20 May 2016 15:44:27 +0800
+Subject: [PATCH] iwinfo: do not wait for scan results if scan request failed.
+
+Do not wait for scan results if scan request failed,
+just return and exit.
+
+Signed-off-by: Dmitry Ivanov <dima at ubnt.com>
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ iwinfo_nl80211.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/iwinfo_nl80211.c b/iwinfo_nl80211.c
+index f947bf0..3f8df41 100644
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -387,13 +387,12 @@ static struct nl80211_msg_conveyor * nl80211_send(
+ 
+ 	while (err > 0)
+ 		nl_recvmsgs(nls->nl_sock, cv->cb);
++	if(err)
++		goto err;
+ 
+ 	return &rcv;
+ 
+ err:
+-	nl_cb_put(cv->cb);
+-	nlmsg_free(cv->msg);
+-
+ 	return NULL;
+ }
+ 
+@@ -2098,15 +2097,18 @@ static int nl80211_get_scanlist_cb(struct nl_msg *msg, void *arg)
+ 
+ static int nl80211_get_scanlist_nl(const char *ifname, char *buf, int *len)
+ {
+-	struct nl80211_msg_conveyor *req;
++	struct nl80211_msg_conveyor *req,*scan_res = NULL;
+ 	struct nl80211_scanlist sl = { .e = (struct iwinfo_scanlist_entry *)buf };
+ 
+ 	req = nl80211_msg(ifname, NL80211_CMD_TRIGGER_SCAN, 0);
+ 	if (req)
+ 	{
+-		nl80211_send(req, NULL, NULL);
++		scan_res = nl80211_send(req, NULL, NULL);
+ 		nl80211_free(req);
+ 	}
++	if (!scan_res) {
++		return -1;
++	}
+ 
+ 	nl80211_wait("nl80211", "scan", NL80211_CMD_NEW_SCAN_RESULTS);
+ 
+-- 
+1.9.1
+
