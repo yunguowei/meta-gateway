@@ -2,10 +2,6 @@
 # Copyright (C) 2006-2010 OpenWrt.org
 # Copyright (C) 2010 Vertical Communications
 
-mount() {
-	/bin/busybox mount -o noatime "$@"
-}
-
 boot_hook_splice_start() {
 	export -n PI_HOOK_SPLICE=1
 }
