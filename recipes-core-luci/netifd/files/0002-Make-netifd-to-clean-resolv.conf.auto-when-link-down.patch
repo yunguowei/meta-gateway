@@ -1,0 +1,33 @@
+From 7bf26c8d63389deaff7a9b9dc6c4a0f5408d3c51 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Wed, 13 Jan 2016 13:38:38 +0800
+Subject: [PATCH] Make netifd to clean resolv.conf.auto when link down.
+
+Issue: IDP3-866
+
+This fix removed the step to mark interface to down instead
+with handling all such work after receive IFPDEV_DOWN event
+triggered by SIGTERM.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ interface.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/interface.c b/interface.c
+index 35f20b0..dd1be3a 100644
+--- a/interface.c
++++ b/interface.c
+@@ -273,7 +273,8 @@ interface_check_state(struct interface *iface)
+ 	case IFS_UP:
+ 		if (!iface->enabled || !link_state) {
+ 			interface_proto_event(iface->proto, PROTO_CMD_TEARDOWN, false);
+-			mark_interface_down(iface);
++			//Don't call this to down iface, wait for the IF_DOWN event
++			//mark_interface_down(iface);
+ 		}
+ 		break;
+ 	case IFS_DOWN:
+--
+1.9.1
+

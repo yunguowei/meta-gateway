@@ -2,3 +2,5 @@
 # Manufacturer|Production|ManufacturerID|ProductID|ConnectionType|pppdDevice|stateDevice
 # Ericsson|F5521gw|0bdb|190d|3g|ttyACM0|ttyACM1
 Telit|HE910|1bc7|0021|3g|ttyACM0|ttyACM3
+Dell|DW5580|413c|81ba|3g|ttyACM0|ttyACM3
+Dell|DW5812|413c|81bb|3g|ttyACM0|ttyACM0

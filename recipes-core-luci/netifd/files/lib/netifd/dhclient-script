@@ -1,5 +1,5 @@
 #!/bin/sh
-[ -z "$1" ] && echo "Error: should be run by udhcpc" && exit 1
+[ -z "$reason" ] && echo "Error: should be run by dhclient" && exit 1
 
 . /lib/functions.sh
 . /lib/netifd/netifd-proto.sh
@@ -16,10 +16,10 @@ set_classless_routes() {
 
 setup_interface () {
 	proto_init_update "*" 1
-	proto_add_ipv4_address "$ip" "${subnet:-255.255.255.0}"
+	proto_add_ipv4_address "$new_ip_address" "${new_subnet_mask:-255.255.255.0}"
 	# TODO: apply $broadcast
 
-	for i in $router; do
+	for i in $new_routers; do
 		proto_add_ipv4_route 0.0.0.0 0 "$i"
 	done
 
@@ -27,16 +27,18 @@ setup_interface () {
 	[ -n "$staticroutes" ] && set_classless_routes $staticroutes
 	[ -n "$msstaticroutes" ] && set_classless_routes $msstaticroutes
 
-	for dns in $dns; do
+	for dns in $new_domain_name_servers; do
 		proto_add_dns_server "$dns"
 	done
-	for domain in $domain; do
+
+	for domain in $new_domain_name; do
 		proto_add_dns_search "$domain"
 	done
 
 	proto_add_data
 	[ -n "$ZONE" ] && json_add_string zone "$ZONE"
 	proto_close_data
+
 
 	proto_send_update "$INTERFACE"
 
@@ -66,7 +68,6 @@ setup_interface () {
 		[ -n "$ZONE6RD" ] || ZONE6RD=$ZONE
 		[ -n "$ZONE6RD" ] && json_add_string zone "$ZONE6RD"
 		json_close_object
-
 		ubus call network add_dynamic "$(json_dump)"
 	fi
 
@@ -81,17 +82,14 @@ deconfig_interface() {
 	proto_init_update "*" 0
 	proto_send_update "$INTERFACE"
 }
-
-case "$1" in
-	deconfig)
+case "$reason" in
+	STOP|RELEASE)
 		deconfig_interface
 	;;
-	renew|bound)
+	RENEW|BOUND|REBOOT|PREINIT)
 		setup_interface
 	;;
 esac
 
-# user rules
-[ -f /etc/udhcpc.user ] && . /etc/udhcpc.user
 
 exit 0

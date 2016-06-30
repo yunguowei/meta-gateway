@@ -142,7 +142,7 @@ detect_mac80211() {
 			[ -n "${interface}" ] && \
 			wlan0_mac=`cat /sys/class/net/${interface}/address | head -n 1 | awk -F: '{ print $(NF-1)$NF }'`
 
-		ssid="Pulsar-$wlan0_mac"
+		ssid="GWP-$wlan0_mac"
 		cat <<EOF
 config wifi-device  wlan$devidx
 	option type     mac80211
@@ -158,11 +158,13 @@ config wifi-iface
 	option mode     ap
 	option ssid     ${ssid}
 	option encryption psk2
-	option key pulsarlinux
+	option key windrivergwp
 
 EOF
 	devidx=$(($devidx + 1))
 	[ $found_reltek = 1 ] && reltek_done=1
 	done
+
+	return 0
 }
 

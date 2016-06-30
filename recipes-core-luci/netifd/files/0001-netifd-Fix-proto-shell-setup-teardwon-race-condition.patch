@@ -1,0 +1,50 @@
+From 069b6b830492109f3e880063f7f52ce2329cb9b6 Mon Sep 17 00:00:00 2001
+From: Hans Dedecker <dedeckeh@gmail.com>
+Date: Thu, 4 Dec 2014 12:07:16 +0000
+Subject: [PATCH] netifd: Fix proto shell setup/teardwon race condition
+
+Fix setup race condition when proto shell is in teardown or setup_abort state when setup cmd is received.
+Don't change the proto shell state and launch no setup in these conditions so the proto shell teardown
+timeout handler does not kill the wrong processes and proto_shell_task_finish takes action on the correct
+teardown state.
+Don't launch a new setup action when already in setup state.
+
+Signed-off-by: Hans Dedecker <dedeckeh@gmail.com>
+---
+ proto-shell.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/proto-shell.c b/proto-shell.c
+index 0131e19..86933b0 100644
+--- a/proto-shell.c
++++ b/proto-shell.c
+@@ -156,10 +156,22 @@ proto_shell_handler(struct interface_proto_state *proto,
+ 	proc = &state->script_task;
+
+ 	if (cmd == PROTO_CMD_SETUP) {
+-		action = "setup";
+-		state->last_error = -1;
+-		proto_shell_clear_host_dep(state);
+-		state->sm = S_SETUP;
++		switch (state->sm) {
++		case S_IDLE:
++			action = "setup";
++			state->last_error = -1;
++			proto_shell_clear_host_dep(state);
++			state->sm = S_SETUP;
++			break;
++
++		case S_SETUP_ABORT:
++		case S_TEARDOWN:
++		case S_SETUP:
++			return 0;
++
++		default:
++			return -1;
++		}
+ 	} else if (cmd == PROTO_CMD_RENEW) {
+ 		if (!(handler->proto.flags & PROTO_FLAG_RENEW_AVAILABLE))
+ 			return 0;
+--
+1.9.1
+

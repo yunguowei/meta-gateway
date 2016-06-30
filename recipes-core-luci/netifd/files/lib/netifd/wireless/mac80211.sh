@@ -14,10 +14,11 @@ MP_CONFIG_INT="mesh_retry_timeout mesh_confirm_timeout mesh_holding_timeout mesh
 MP_CONFIG_BOOL="mesh_auto_open_plinks mesh_fwding"
 MP_CONFIG_STRING="mesh_power_mode"
 
-is_realtek() {
+is_exception() {
 
 	local realtek_8723be="0x10ec_0xb723"
 	local realtek_8188ee="0x10ec_0x8179"
+	local marvell_8897="0x11ab_0x2b38"
 	local vendor_device
 	local vendor
 	local device
@@ -29,7 +30,7 @@ is_realtek() {
 	[ -z "${vendor}" ] && vendor="null"
 	[ -z "${device}" ] && device="null"
 	vendor_device=${vendor}_${device}
-	[ "${vendor_device}" = "${realtek_8723be}" -o "${vendor_device}" = "${realtek_8188ee}" ] || return 1 && return 0
+	[ "${vendor_device}" = "${marvell_8897}" -o "${vendor_device}" = "${realtek_8723be}" -o "${vendor_device}" = "${realtek_8188ee}" ] || return 1 && return 0
 
 }
 drv_mac80211_init_device_config() {
@@ -104,7 +105,11 @@ mac80211_hostapd_setup_base() {
 
 	json_select config
 
-	[ "$auto_channel" -gt 0 ] && channel=acs_survey
+	[ "$auto_channel" -gt 0 ] && {
+		channel=$(iw phy "$phy" info | \
+			sed -ne '/MHz \[/ { /disabled\|passive\|radar/d; s/.*\[//; s/\].*//; p; q }')
+		config_set "$device" channel "$channel"
+	}
 
 	json_get_vars noscan
 	json_get_values ht_capab_list ht_capab
@@ -278,7 +283,7 @@ mac80211_hostapd_setup_base() {
 			vht_max_mpdu_hw=11454
 		[ "$vht_max_mpdu_hw" != 3895 ] && \
 			vht_capab="$vht_capab[MAX-MPDU-$vht_max_mpdu_hw]"
-			
+
 		# maximum A-MPDU length exponent
 		vht_max_a_mpdu_len_exp_hw=0
 		[ "$(($vht_cap & 58720256))" -ge 8388608 -a 1 -le "$vht_max_a_mpdu_len_exp" ] && \
@@ -428,7 +433,7 @@ mac80211_prepare_vif() {
 	# It is far easier to delete and create the desired interface
 	case "$mode" in
 		adhoc)
-			! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type adhoc
+			! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type adhoc
 		;;
 		ap)
 			# Hostapd will handle recreating the interface and
@@ -442,26 +447,26 @@ mac80211_prepare_vif() {
 			mac80211_hostapd_setup_bss "$phy" "$ifname" "$macaddr" "$type" || return
 
 			[ -n "$hostapd_ctrl" ] || {
-				! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type managed
+				! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type managed
 				hostapd_ctrl="${hostapd_ctrl:-/var/run/hostapd/$ifname}"
 			}
 		;;
 		mesh)
 			json_get_vars key mesh_id
 			if [ -n "$key" ]; then
-				! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type mp
+				! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type mp
 			else
-				! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type mp mesh_id "$mesh_id"
+				! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type mp mesh_id "$mesh_id"
 			fi
 		;;
 		monitor)
-			! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type monitor
+			! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type monitor
 		;;
 		sta)
 			local wdsflag=
 			staidx="$(($staidx + 1))"
 			[ "$wds" -gt 0 ] && wdsflag="4addr on"
-			! (is_realtek "$phy") && iw phy "$phy" interface add "$ifname" type managed $wdsflag
+			! (is_exception "$phy") && iw phy "$phy" interface add "$ifname" type managed $wdsflag
 			[ "$powersave" -gt 0 ] && powersave="on" || powersave="off"
 			iw "$ifname" set power_save "$powersave"
 		;;
@@ -478,7 +483,7 @@ mac80211_prepare_vif() {
 		# All interfaces must have unique mac addresses
 		# which can either be explicitly set in the device
 		# section, or automatically generated
-		! (is_realtek "$phy") && ifconfig "$ifname" hw ether "$macaddr"
+		! (is_exception "$phy") && ifconfig "$ifname" hw ether "$macaddr"
 	fi
 
 	json_select ..
@@ -628,7 +633,7 @@ mac80211_interface_cleanup() {
 
 	for wdev in $(list_phy_interfaces "$phy"); do
 		ifconfig "$wdev" down 2>/dev/null
-		! (is_realtek "$phy") && iw dev "$wdev" del
+		! (is_exception "$phy") && iw dev "$wdev" del
 	done
 }
 
@@ -684,6 +689,7 @@ drv_mac80211_setup() {
 	set_default antenna_gain 0
 
 	iw phy "$phy" set antenna $txantenna $rxantenna >/dev/null 2>&1
+	antenna_gain=`echo $antenna_gain | awk '{printf("%.2f\n",$0)}'`
 	iw phy "$phy" set antenna_gain $antenna_gain
 	iw phy "$phy" set distance "$distance"
 

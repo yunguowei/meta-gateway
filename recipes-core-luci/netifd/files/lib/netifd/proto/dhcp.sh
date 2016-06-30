@@ -43,19 +43,16 @@ proto_dhcp_setup() {
 	[ -n "$zone6rd" ] && proto_export "ZONE6RD=$zone6rd"
 	[ -n "$zone" ] && proto_export "ZONE=$zone"
 	[ "$delegate" = "0" ] && proto_export "IFACE6RD_DELEGATE=0"
-	
-	hostname=`/bin/hostname`
 
+	hostname=`/bin/hostname`
 	proto_export "INTERFACE=$config"
-	proto_run_command "$config" udhcpc \
-		-F $hostname \
-		-p /var/run/udhcpc-$iface.pid \
-		-s /lib/netifd/dhcp.script \
-		-f -t 0 -i "$iface" \
-		${ipaddr:+-r $ipaddr} \
-		${hostname:+-H $hostname} \
-		${vendorid:+-V $vendorid} \
-		$clientid $broadcast $dhcpopts
+	proto_run_command "$config" dhclient \
+		-pf /var/run/udhcpc-$iface.pid \
+		-d \
+		-e INTERFACE=$config \
+		-sf /lib/netifd/dhclient-script \
+		"$iface"
+
 }
 
 proto_dhcp_renew() {

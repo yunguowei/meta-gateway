@@ -1,0 +1,26 @@
+From 845245d8ff3814d17cf905ff1c2d0c402e807a8b Mon Sep 17 00:00:00 2001
+From: "Yue.Shen" <Yue.Shen@windriver.com>
+Date: Thu, 31 Mar 2016 08:32:21 +0000
+Subject: [PATCH] update json-c include location
+
+Signed-off-by: Yue.Shen <Yue.Shen@windriver.com>
+---
+ handler.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/handler.h b/handler.h
+index baf9c3c..d6f15cc 100644
+--- a/handler.h
++++ b/handler.h
+@@ -15,7 +15,7 @@
+ #define __NETIFD_HANDLER_H
+
+ #include <libubox/blobmsg_json.h>
+-#include <json/json.h>
++#include <json-c/json.h>
+ #include "config.h"
+
+ typedef void (*script_dump_cb)(const char *script, const char *name, json_object *obj);
+--
+2.5.0
+
