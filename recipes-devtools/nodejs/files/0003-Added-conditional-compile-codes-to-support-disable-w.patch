@@ -1,0 +1,181 @@
+From 2d63ef07715a34f1f25cbeb5fb5906ade763d46c Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Tue, 31 May 2016 14:53:13 +0800
+Subject: [PATCH] Added conditional compile codes to support disable weak
+ ciphers.
+
+If EC and ECDH are disabled by the depended openssl, the related
+source codes should be conditional compiled.
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ src/node_constants.cc |  6 +++++-
+ src/node_crypto.cc    | 18 ++++++++++++------
+ src/node_crypto.h     |  8 ++++++++
+ 3 files changed, 25 insertions(+), 7 deletions(-)
+
+diff --git a/src/node_constants.cc b/src/node_constants.cc
+index 51c2ee8..7e36ebd 100644
+--- a/src/node_constants.cc
++++ b/src/node_constants.cc
+@@ -12,8 +12,10 @@
+ #include <sys/stat.h>
+ 
+ #if HAVE_OPENSSL
+-# include <openssl/ec.h>
+ # include <openssl/ssl.h>
++#ifndef OPENSSL_NO_EC
++# include <openssl/ec.h>
++# endif
+ # ifndef OPENSSL_NO_ENGINE
+ #  include <openssl/engine.h>
+ # endif  // !OPENSSL_NO_ENGINE
+@@ -961,12 +963,14 @@ void DefineOpenSSLConstants(Local<Object> target) {
+ 
+ #if HAVE_OPENSSL
+   // NOTE: These are not defines
++#ifndef OPENSSL_NO_EC
+   NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_COMPRESSED);
+ 
+   NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_UNCOMPRESSED);
+ 
+   NODE_DEFINE_CONSTANT(target, POINT_CONVERSION_HYBRID);
+ #endif
++#endif
+ }
+ 
+ void DefineSystemConstants(Local<Object> target) {
+diff --git a/src/node_crypto.cc b/src/node_crypto.cc
+index b03e644..5167ed5 100644
+--- a/src/node_crypto.cc
++++ b/src/node_crypto.cc
+@@ -281,7 +281,9 @@ void SecureContext::Initialize(Environment* env, Local<Object> target) {
+   env->SetProtoMethod(t, "addCRL", SecureContext::AddCRL);
+   env->SetProtoMethod(t, "addRootCerts", SecureContext::AddRootCerts);
+   env->SetProtoMethod(t, "setCiphers", SecureContext::SetCiphers);
++#ifndef OPENSSL_NO_EC
+   env->SetProtoMethod(t, "setECDHCurve", SecureContext::SetECDHCurve);
++#endif
+   env->SetProtoMethod(t, "setDHParam", SecureContext::SetDHParam);
+   env->SetProtoMethod(t, "setOptions", SecureContext::SetOptions);
+   env->SetProtoMethod(t, "setSessionIdContext",
+@@ -748,7 +750,7 @@ void SecureContext::SetCiphers(const FunctionCallbackInfo<Value>& args) {
+   SSL_CTX_set_cipher_list(sc->ctx_, *ciphers);
+ }
+ 
+-
++#ifndef OPENSSL_NO_EC
+ void SecureContext::SetECDHCurve(const FunctionCallbackInfo<Value>& args) {
+   SecureContext* sc = Unwrap<SecureContext>(args.Holder());
+   Environment* env = sc->env();
+@@ -773,7 +775,7 @@ void SecureContext::SetECDHCurve(const FunctionCallbackInfo<Value>& args) {
+ 
+   EC_KEY_free(ecdh);
+ }
+-
++#endif
+ 
+ void SecureContext::SetDHParam(const FunctionCallbackInfo<Value>& args) {
+   SecureContext* sc = Unwrap<SecureContext>(args.This());
+@@ -4417,7 +4419,7 @@ bool DiffieHellman::VerifyContext() {
+   return true;
+ }
+ 
+-
++#ifndef OPENSSL_NO_EC
+ void ECDH::Initialize(Environment* env, Local<Object> target) {
+   HandleScope scope(env->isolate());
+ 
+@@ -4632,7 +4634,7 @@ void ECDH::SetPublicKey(const FunctionCallbackInfo<Value>& args) {
+   if (!r)
+     return env->ThrowError("Failed to convert BN to a private key");
+ }
+-
++#endif
+ 
+ class PBKDF2Request : public AsyncWrap {
+  public:
+@@ -5134,7 +5136,7 @@ void GetHashes(const FunctionCallbackInfo<Value>& args) {
+   args.GetReturnValue().Set(ctx.arr);
+ }
+ 
+-
++#ifndef OPENSSL_NO_EC
+ void GetCurves(const FunctionCallbackInfo<Value>& args) {
+   Environment* env = Environment::GetCurrent(args);
+   const size_t num_curves = EC_get_builtin_curves(nullptr, 0);
+@@ -5159,7 +5161,7 @@ void GetCurves(const FunctionCallbackInfo<Value>& args) {
+ 
+   args.GetReturnValue().Set(arr);
+ }
+-
++#endif
+ 
+ void Certificate::Initialize(Environment* env, Local<Object> target) {
+   HandleScope scope(env->isolate());
+@@ -5439,7 +5441,9 @@ void InitCrypto(Local<Object> target,
+   Connection::Initialize(env, target);
+   CipherBase::Initialize(env, target);
+   DiffieHellman::Initialize(env, target);
++#ifndef OPENSSL_NO_EC
+   ECDH::Initialize(env, target);
++#endif
+   Hmac::Initialize(env, target);
+   Hash::Initialize(env, target);
+   Sign::Initialize(env, target);
+@@ -5454,7 +5458,9 @@ void InitCrypto(Local<Object> target,
+   env->SetMethod(target, "getSSLCiphers", GetSSLCiphers);
+   env->SetMethod(target, "getCiphers", GetCiphers);
+   env->SetMethod(target, "getHashes", GetHashes);
++#ifndef OPENSSL_NO_EC
+   env->SetMethod(target, "getCurves", GetCurves);
++#endif
+   env->SetMethod(target, "publicEncrypt",
+                  PublicKeyCipher::Cipher<PublicKeyCipher::kPublic,
+                                          EVP_PKEY_encrypt_init,
+diff --git a/src/node_crypto.h b/src/node_crypto.h
+index 3bec02c..ee69a98 100644
+--- a/src/node_crypto.h
++++ b/src/node_crypto.h
+@@ -18,8 +18,12 @@
+ #include "v8.h"
+ 
+ #include <openssl/ssl.h>
++#ifndef OPENSSL_NO_EC
+ #include <openssl/ec.h>
++#endif
++#ifndef OPENSSL_NO_ECDH
+ #include <openssl/ecdh.h>
++#endif
+ #ifndef OPENSSL_NO_ENGINE
+ # include <openssl/engine.h>
+ #endif  // !OPENSSL_NO_ENGINE
+@@ -86,7 +90,9 @@ class SecureContext : public BaseObject {
+   static void AddCRL(const v8::FunctionCallbackInfo<v8::Value>& args);
+   static void AddRootCerts(const v8::FunctionCallbackInfo<v8::Value>& args);
+   static void SetCiphers(const v8::FunctionCallbackInfo<v8::Value>& args);
++#ifndef OPENSSL_NO_ECDH
+   static void SetECDHCurve(const v8::FunctionCallbackInfo<v8::Value>& args);
++#endif
+   static void SetDHParam(const v8::FunctionCallbackInfo<v8::Value>& args);
+   static void SetOptions(const v8::FunctionCallbackInfo<v8::Value>& args);
+   static void SetSessionIdContext(
+@@ -675,6 +681,7 @@ class DiffieHellman : public BaseObject {
+   DH* dh;
+ };
+ 
++#ifndef OPENSSL_NO_ECDH
+ class ECDH : public BaseObject {
+  public:
+   ~ECDH() override {
+@@ -710,6 +717,7 @@ class ECDH : public BaseObject {
+   EC_KEY* key_;
+   const EC_GROUP* group_;
+ };
++#endif
+ 
+ class Certificate : public AsyncWrap {
+  public:
+-- 
+1.9.1
+
