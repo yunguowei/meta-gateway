@@ -1,0 +1,38 @@
+From a293739a1c465fc57ab7827a0400344b1ac2c22c Mon Sep 17 00:00:00 2001
+From: "Shoutao.Li" <Shoutao.Li@windriver.com>
+Date: Mon, 28 Sep 2015 14:33:35 +0800
+Subject: [PATCH] Add icmp library backwards compatibility
+
+The name of icmp ipv6 dynamic shared library provided by iptables is
+"libip6t_icmp6.so" not "libip6t_icmpv6.so".
+
+This is ugly as hell. Nonetheless, there is no way of changing this
+without hurting backwards compatibility.
+
+Signed-off-by: Shoutao.Li <Shoutao.Li@windriver.com>
+---
+ iptables.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/iptables.c b/iptables.c
+index 109b3c0..47722a6 100644
+--- a/iptables.c
++++ b/iptables.c
+@@ -374,8 +374,14 @@ load_extension(struct fw3_ipt_handle *h, const char *name)
+ {
+ 	char path[256];
+ 	void *lib, **tmp;
++	const char *icmp6 = "icmp6";
+ 	const char *pfx = (h->family == FW3_FAMILY_V6) ? "libip6t" : "libipt";
+ 
++	if ( (strcmp(name,"icmpv6") == 0) ||
++	     (strcmp(name,"ipv6-icmp") == 0) ||
++	     (strcmp(name,"icmp6") == 0) )
++		name = icmp6;
++
+ 	snprintf(path, sizeof(path), "%s/libxt_%s.so", xtables_libdir, name);
+ 	if (!(lib = dlopen(path, RTLD_NOW)))
+ 	{
+-- 
+1.9.1
+

@@ -1,0 +1,37 @@
+From 65b7f7ab31faab7d9e8c8dc75eb524abbcc6b624 Mon Sep 17 00:00:00 2001
+From: "Shoutao.Li" <Shoutao.Li@windriver.com>
+Date: Tue, 22 Sep 2015 17:36:22 +0800
+Subject: [PATCH] Revise iptables dynamic shared library path.
+
+According to the platform architecture, iptables dynamic shared library
+path may be "/usr/lib/xtables" or "/usr/lib64/xtables".But the original
+source code only finds iptables libraries under "/usr/lib/xtables".
+
+Using the iptables global dynamic shared library path to responding to
+the different platform architechure.
+
+Signed-off-by: Shoutao.Li <Shoutao.Li@windriver.com>
+---
+ iptables.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/iptables.c b/iptables.c
+index 0396ea0..109b3c0 100644
+--- a/iptables.c
++++ b/iptables.c
+@@ -376,10 +376,10 @@ load_extension(struct fw3_ipt_handle *h, const char *name)
+ 	void *lib, **tmp;
+ 	const char *pfx = (h->family == FW3_FAMILY_V6) ? "libip6t" : "libipt";
+ 
+-	snprintf(path, sizeof(path), "/usr/lib/xtables/libxt_%s.so", name);
++	snprintf(path, sizeof(path), "%s/libxt_%s.so", xtables_libdir, name);
+ 	if (!(lib = dlopen(path, RTLD_NOW)))
+ 	{
+-		snprintf(path, sizeof(path), "/usr/lib/xtables/%s_%s.so", pfx, name);
++		snprintf(path, sizeof(path), "%s/%s_%s.so", xtables_libdir, pfx, name);
+ 		lib = dlopen(path, RTLD_NOW);
+ 	}
+ 
+-- 
+1.9.1
+

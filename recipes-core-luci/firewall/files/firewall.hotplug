@@ -1,27 +1,11 @@
 #!/bin/sh
-# This script is executed as part of the hotplug event with
-# HOTPLUG_TYPE=iface, triggered by various scripts when an interface
-# is configured (ACTION=ifup) or deconfigured (ACTION=ifdown).  The
-# interface is available as INTERFACE, the real device as DEVICE.
 
-[ "$DEVICE" == "lo" ] && exit 0
+[ "$ACTION" = ifup -o "$ACTION" = ifupdate ] || exit 0
+[ "$ACTION" = ifupdate -a -z "$IFUPDATE_ADDRESSES" -a -z "$IFUPDATE_DATA" ] && exit 0
 
-. /lib/functions.sh
-. /lib/firewall/core.sh
+[ -f /var/run/fw3.state ] || exit 0
 
-fw_init
+fw3 -q network "$INTERFACE" >/dev/null || exit 0
 
-systemctl is-enabled firewall && \
-while true ; do
-	fw_is_loaded && break
-	sleep 1
-done
-
-case "$ACTION" in
-	ifup)
-		fw_configure_interface "$INTERFACE" add "$DEVICE" &
-	;;
-	ifdown)
-		fw_configure_interface "$INTERFACE" del "$DEVICE"
-	;;
-esac
+logger -t firewall "Reloading firewall due to $ACTION of $INTERFACE ($DEVICE)"
+fw3 -q reload

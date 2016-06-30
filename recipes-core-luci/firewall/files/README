@@ -1,0 +1,173 @@
+
+-------------------
+  Firewall README
+-------------------
+
+1. Introduction
+===============
+The firewall function is to provide basic protection between LAN and
+WAN in different layers of network architecture, users can add firewall
+rules for special protocol, port or IP/MAC address, and then firewall
+will deal with the related packets which are matched with rules with
+different targets (DROP, FORWARD, MANGLE or others) defined in rules.
+Of course, it can transfer the ip address in LAN to an ip address in
+WAN for hiding the local IP.
+
+2. Firewall Package
+==================
+Firewall includes the following packages:
+
+    arptables
+    ebtables
+
+3. Firewall Packages' Description
+==================
+
+iptables
+iptables is the userspace command line program used to configure the IPv4
+packet filtering rule set. It is targeted towards system administrators.
+
+iptables main features
+.   Listing the contents of the packet filter rule set
+.   Adding/removing/modifying rules in the packet filter rule set
+.   Do packets filter and NAT by iptables command.
+
+ebtables
+The ebtables program is a filtering tool for a Linux-based bridging firewall.
+
+arptables
+The arptables computer software utility is a network administrator's
+tool for maintaining the Address Resolution Protocol (ARP) packet filter rules.
+
+ipset
+ipset is used to set up, maintain and inspect so called IP sets in the
+Linux kernel.
+
+libmnl
+libmnl is a minimalistic user-space library oriented to Netlink developers.
+
+libnfnetlink
+libnfnetlink is the low-level library for netfilter related kernel/userspace
+communication.
+
+libnetfilter_conntrack
+libnetfilter_conntrack is a userspace library providing a programming
+interface (API) to the in-kernel connection tracking state table.
+
+
+4. Firewall Package Test Case
+====================
+
+4.1 ebtables
+-------------------
+
+Set up bridge and add interface into it.
+.   Add ebtables rules between the 2 bridges, and then
+produce the traffic between these 2 bridges, the traffic can be DROP
+or ACCPET as the ebtables rules defined.
+
+Test Cases:
+1 ebtables -help: Can show help information.
+2 ebtables -L: Can show all the rules which be added.
+3
+Adding Bridge:
+    brctl addbr br0
+    brctl stp br0 off
+    brctl addif br0 eth2
+    ifconfig eth2 down
+    ifconfig eth2 0.0.0.0 up
+    ifconfig br0 192.168.1.1 up
+    (eth2 is LAN interface on target platform)
+
+ebtables -A INPUT --src 00:1b:38:96:63:00 -j DROP
+00:1e:c9:55:82:4c is the MAC address of LAN PC, and then, LAN PC can't ping
+WAN PC. All the icmp request packets are dropped by target platform.
+
+4 ebtables -L can show the rule which just be added:
+# ebtables -L
+Bridge table: filter
+Bridge chain: INPUT, entries: 1, policy: ACCEPT
+-s 0:1e:c9:55:82:4c -j DROP
+
+Bridge chain: FORWARD, entries: 0, policy: ACCEPT
+
+Bridge chain: OUTPUT, entries: 0, policy: ACCEPT
+
+
+4.2 arptables
+-------------------
+
+1 arptables -help: Can show help information.
+2 arptables -L: Can show all the rules which be added.
+3 arptables -A INPUT -i eth0 --src-mac  !  00:24:51:E9:C7:10 -j DROP
+If the packets which are from eth0 and their MAC aren't WAN_MAC,
+target platform can drop these packets. User in LAN will not receive
+any this kind packets.
+
+4.3 ipset
+-------------------
+0 modprobe ip_set: Install the ip_set kernel module.
+1 ipset -help: Can show help information.
+2 ipset -L: Can show all the rules which be added.
+3 ipset -N test_policy ipmap --network 192.168.100.1/24
+Create test_policy chain. Use command :
+    #ipset -L
+can show this chain's information.
+
+4 Add some ip addresses in test_policy chain:
+            ipset -A  test_policy  192.168.100.1
+            ipset -A  test_policy  192.168.100.2
+            ipset -A  test_policy  192.168.100.3
+            ipset -A  test_policy  192.168.100.4
+5 Command :
+    #ipset -L : can show this chain's information and the ip addresses added.
+
+6 iptables -A FORWARD -m set --match-set test_policy src -j DROP:
+It will drop all the packets defined in test_policy.
+
+
+4.4 iptables
+-------------------
+
+1 iptables -help: Can show help information.
+2 iptables -L: Can show all the rules which be added.
+3 iptables -A INPUT -p tcp --sport 31337 -j DROP
+This rule will drop all the TCP packets which source port == 31337
+4 Set up test envirment:
+
+192.168.1.1 [PC1] ---- <target platform> ---- [PC2] 192.168.1.2
+# iptables -A INPUT -p icmp -j DROP
+This rule will drop all the icmp packets.
+So you can't ping PC2 from PC1 or ping PC1 from PC2.
+
+
+4.5 libmnl, libnfnetlink, libnetfilter_conntrack
+-------------------
+
+libnetfilter_conntrack's main functions are list in the following lines:
+.   Listing/retrieving entries from the kernel connection tracking table
+.   Inserting/modifying/deleting entries from the kernel
+    connection tracking table
+.   Listing/retrieving entries from the kernel expect table
+.   Inserting/modifying/deleting entries from the kernel expect table
+
+And because libnetfilter_conntrack depends on libnfnetlink and libmnl,
+so, the 3 packages above are tested together.
+
+The three packages can be tested by conntrack_tools ,and conntrack_tools
+will use the packages above.
+
+-------------------
+Note:
+
+    Please make sure the feature firewall has been configured correctly
+before starting compile the project. If yes, the following 5 TABLE will
+be supportted entirely:
+
+    root@WR-IntelligentDevice:~# iptables -L -t nat
+    root@WR-IntelligentDevice:~# iptables -L -t mangle
+    root@WR-IntelligentDevice:~# iptables -L -t filter
+    root@WR-IntelligentDevice:~# iptables -L -t raw
+
+-------------------
+<END>
