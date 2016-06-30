@@ -1,0 +1,39 @@
+From 89b9178f3a96c076b707a027f665917611821902 Mon Sep 17 00:00:00 2001
+From: Haiqing Bai <Haiqing.Bai@windriver.com>
+Date: Wed, 6 Apr 2016 14:56:15 +0800
+Subject: [PATCH] Remove the source file path in log messages.
+
+It is not right to show full path of source code in
+log messages, this fix only keep the filename in log.
+
+Upstream-status: Pending
+
+Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
+---
+ src/log.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/log.c b/src/log.c
+index 94f4710..4389b7b 100644
+--- a/src/log.c
++++ b/src/log.c
+@@ -13,6 +13,7 @@
+ 
+ #include <stdarg.h>
+ #include <stdio.h>
++#include <libgen.h>
+ 
+ #ifdef HAVE_SYSLOG_H
+ # include <syslog.h>
+@@ -347,7 +348,7 @@ static int log_buffer_prepare(buffer *b, server *srv, const char *filename, unsi
+ 		break;
+ 	}
+ 
+-	buffer_append_string(b, filename);
++	buffer_append_string(b, basename(filename));
+ 	buffer_append_string_len(b, CONST_STR_LEN("."));
+ 	buffer_append_int(b, line);
+ 	buffer_append_string_len(b, CONST_STR_LEN(") "));
+-- 
+1.9.1
+

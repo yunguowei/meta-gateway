@@ -1,0 +1,12 @@
+[Unit]
+Description=Lighttpd Web Server
+After=syslog.target network.target
+
+[Service]
+Type=simple
+TimeoutStartSec=0
+ExecStartPre=/usr/sbin/lighttpd-ssl-cert
+ExecStart=/usr/sbin/lighttpd -D -f /etc/lighttpd.conf
+
+[Install]
+WantedBy=multi-user.target

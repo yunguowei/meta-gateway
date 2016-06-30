@@ -1,0 +1,92 @@
+#!/bin/bash -e
+
+CONF_FILE=/etc/lighttpd.conf
+SSL_CERT=/etc/lighttpd/certs/lighttpd.pem
+export RANDFILE=/etc/lighttpd/certs/.rnd
+
+FORCE=0
+
+eval set -- "`getopt -o fh -l force,help -- "$@"`"
+
+while true ; do
+    case "$1" in
+        -f|--force) FORCE=1 ; shift ;;
+        -h|--help)
+            echo -e >&2 "Usage: $0 [options]\n" ;
+            echo -e >&2 "Options:" ;
+            echo -e >&2 " -f, --force                remove existing destination files" ;
+            echo -e >&2 " -h, --help                 print this usage message and exit" ;
+            exit 1 ;;
+        --) shift ; break ;;
+        *) echo "Internal error!" ; exit 1 ;;
+    esac
+done
+
+# Only generate dhparam if it doesn't exist or -f option is specified.
+# However, never do this if ssl.dh-file is not set in conf file at all.
+DHFile=$(grep -rH "^ssl.dh-file[\t\ ]*=.*" $CONF_FILE | cut -d'=' -f 2 | sed 's/[\t\ "]//g')
+if [ -n "$DHFile" ]; then
+    if [ ! -f "$DHFile" -o "$FORCE" == "1" ] ; then
+        echo "Generating dhparam: $DHFile ..."
+        mkdir -p $(dirname $DHFile)
+        if ! openssl dhparam -out $DHFile 2048 ; then
+            echo "Fail to generate $DHFile" >&2
+            # Continue to generate ssl cert/keys
+        fi
+    fi
+fi
+
+# Only generate ssl certificate if it doesn't exist or -f option is specified.
+if [ -f "$SSL_CERT" ]; then
+    if [ "$FORCE" != "1" ]; then
+         exit 0
+    fi
+fi
+
+HostName="$(hostname -f 2>/dev/null)" || HostName="$(hostname 2>/dev/null)"
+
+if [ ${#HostName} -gt 64 ] ; then
+    AltName="DNS:$HostName"
+    HostName="$(hostname 2>/dev/null)"
+fi
+
+TMPFILE="$(mktemp)" || exit 1
+TMPOUT="$(mktemp)"  || exit 1
+
+trap "rm -f $TMPFILE $TMPOUT" EXIT
+
+cat <<-EOF > $TMPFILE
+RANDFILE                = /dev/urandom
+
+[ req ]
+default_bits            = 2048
+default_keyfile         = privkey.pem
+distinguished_name      = req_distinguished_name
+prompt                  = no
+policy                  = policy_anything
+req_extensions          = v3_req
+x509_extensions         = v3_req
+
+[ req_distinguished_name ]
+commonName                      = $HostName
+
+[ v3_req ]
+basicConstraints        = CA:FALSE
+EOF
+
+[ -z "$AltName" ] || echo "subjectAltName=$AltName" >> $TMPFILE
+
+echo "Generating ssl cert: $SSL_CERT ..."
+mkdir -p $(dirname $SSL_CERT)
+if ! openssl req -config $TMPFILE -new -sha256 -x509 -days 3650 -nodes \
+    -out $SSL_CERT \
+    -keyout $SSL_CERT > $TMPOUT 2>&1
+then
+    echo Could not create certificate. Openssl output was: >&2
+    cat $TMPOUT >&2
+    exit 1
+fi
+
+chmod 0600 $(dirname $SSL_CERT)
+
+exit 0
