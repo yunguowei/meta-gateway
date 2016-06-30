@@ -48,8 +48,8 @@ IMAGE_INSTALL += "netifd"
 IMAGE_INSTALL += "python-smartpm"
 IMAGE_INSTALL += "firewall"
 IMAGE_INSTALL += "multiwan"
-IMAGE_INSTALL += "idp-base"
-IMAGE_INSTALL += "idp-boot"
+IMAGE_INSTALL += "gw-base"
+IMAGE_INSTALL += "gw-boot"
 IMAGE_INSTALL += "comgt"
 
 # Extras as defined externally
