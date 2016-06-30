@@ -3,9 +3,9 @@ DESCRIPTION = "Mosquitto is an open source (BSD licensed) message broker that im
 HOMEPAGE = "http://mosquitto.org/"
 SECTION = "console/network"
 LICENSE = "BSD"
-LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=89aa5ea5f32e4260d84c5d185ee3add4"
+LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=62ddc846179e908dc0c8efec4a42ef20"
 
-DEPENDS = "openssl c-ares"
+DEPENDS = "openssl util-linux python c-ares"
 
 PR = "r0"
 
@@ -14,9 +14,14 @@ SRC_URI = "http://mosquitto.org/files/source/mosquitto-${PV}.tar.gz \
            file://mosquitto.service \
 "
 
-SRC_URI[md5sum] = "55094ad4dc7c7985377f43d4fc3d09da"
-SRC_URI[sha256sum] = "16eb3dbef183827665feee9288362c7352cd016ba04ca0402a0ccf857d1c2ab2"
+export LIB_SUFFIX="${@d.getVar('baselib', True).replace('lib', '')}"
 
+SRC_URI[md5sum] = "d859cd474ffa61a6197bdabe007b9027"
+SRC_URI[sha256sum] = "d96eb5610e57cc3e273f4527d3f54358ab7711459941a9e64bc4d0a85c2acfda"
+
+do_compile() {
+    oe_runmake PREFIX=/usr
+}
 
 do_install() {
     oe_runmake install DESTDIR=${D}
@@ -25,16 +30,13 @@ do_install() {
 
     install -d ${D}${systemd_unitdir}/system/
     install -m 0644 ${WORKDIR}/mosquitto.service ${D}${systemd_unitdir}/system/
-
-    cp ${D}${sysconfdir}/mosquitto/mosquitto.conf.example ${D}${sysconfdir}/mosquitto/mosquitto.conf
-    sed 's/#user mosquitto/user root/' -i ${D}${sysconfdir}/mosquitto/mosquitto.conf
 }
 
 PACKAGES += "libmosquitto1 libmosquittopp1 ${PN}-clients ${PN}-python"
 
 FILES_${PN} = "${sbindir}/mosquitto \
                ${bindir}/mosquitto_passwd \
-               ${sysconfdir} \
+               ${sysconfdir}/mosquitto \
                ${systemd_unitdir}/system/mosquitto.service \
 "
 
