@@ -100,7 +100,7 @@ proto_pppoe_setup() {
 	local iface="$2"
 
 	for module in slhc ppp_generic pppox pppoe; do
-		/sbin/insmod $module 2>&- >&-
+		/sbin/modprobe $module 2>&- >&-
 	done
 
 	json_get_var mtu mtu

@@ -1,0 +1,31 @@
+From d04cef008ac3f4b37d6979fb7a7c603079e4ff5c Mon Sep 17 00:00:00 2001
+From: "Junxian.Xiao" <Junxian.Xiao@windriver.com>
+Date: Mon, 24 Aug 2015 17:48:28 +0800
+Subject: [PATCH] Restore old default route when there is no new one
+
+Another new default route may be used after pppd start.
+
+Signed-off-by: Junxian.Xiao <Junxian.Xiao@windriver.com>
+---
+ pppd/sys-linux.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/pppd/sys-linux.c b/pppd/sys-linux.c
+index 8f1499d..2906341 100644
+--- a/pppd/sys-linux.c
++++ b/pppd/sys-linux.c
+@@ -1767,7 +1767,10 @@ int cifdefaultroute (int unit, u_int32_t ouraddr, u_int32_t gateway)
+ 	    return 0;
+ 	}
+     }
+-    if (default_rt_repl_rest) {
++
++    /* Restore old default route when there is no new one.
++     * Another new default route maybe used after pppd start.*/
++    if (default_rt_repl_rest && !defaultroute_exists(&rt)) {
+ 	notice("restoring old default route to %s [%I]",
+ 			old_def_rt.rt_dev, SIN_ADDR(old_def_rt.rt_gateway));
+         if (ioctl(sock_fd, SIOCADDRT, &old_def_rt) < 0) {
+--
+1.9.1
+

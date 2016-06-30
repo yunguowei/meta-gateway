@@ -9,13 +9,13 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
 --- a/pppd/multilink.c
 +++ b/pppd/multilink.c
 @@ -56,7 +56,8 @@ static void iterate_bundle_links __P((vo
- 
+
  static int get_default_epdisc __P((struct epdisc *));
  static int parse_num __P((char *str, const char *key, int *valp));
 -static int owns_unit __P((TDB_DATA pid, int unit));
 +static int parse_str __P((char *str, const char *key, char *buf, int buflen));
 +static int owns_link __P((TDB_DATA pid, char *ifname));
- 
+
  #define set_ip_epdisc(ep, addr) do {	\
  	ep->length = 4;			\
 @@ -197,35 +198,38 @@ mp_join_bundle()
@@ -47,7 +47,7 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
  		}
  		free(pid.dptr);
 -	}
- 
+
 -	if (unit >= 0) {
  		/* attach to existing unit */
 -		if (bundle_attach(unit)) {
@@ -63,12 +63,12 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
  		}
 -		/* attach failed because bundle doesn't exist */
  	}
- 
+
  	/* we have to make a new bundle */
 @@ -408,22 +412,45 @@ parse_num(str, key, valp)
  	return 0;
  }
- 
+
 +static int
 +parse_str(str, key, buf, buflen)
 +     char *str;
@@ -105,7 +105,7 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
 +	char ifkey[7 + IFNAMSIZ];
  	TDB_DATA kd, vd;
  	int ret = 0;
- 
+
 -	slprintf(ifkey, sizeof(ifkey), "IFNAME=ppp%d", unit);
 +	slprintf(ifkey, sizeof(ifkey), "IFNAME=%s", ifname);
 +
@@ -118,10 +118,10 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
  			&& memcmp(vd.dptr, key.dptr, vd.dsize) == 0;
 --- a/pppd/sys-linux.c
 +++ b/pppd/sys-linux.c
-@@ -700,6 +700,16 @@ void cfg_bundle(int mrru, int mtru, int 
+@@ -700,6 +700,16 @@ void cfg_bundle(int mrru, int mtru, int
  	add_fd(ppp_dev_fd);
  }
- 
+
 +static void
 +setenv_ifunit(void)
 +{
@@ -136,11 +136,11 @@ Signed-off-by: George Kashperko <george@znau.edu.ua>
   * make_new_bundle - create a new PPP unit (i.e. a bundle)
   * and connect our channel to it.  This should only get called
 @@ -718,6 +728,8 @@ void make_new_bundle(int mrru, int mtru,
- 
+
  	/* set the mrru and flags */
  	cfg_bundle(mrru, mtru, rssn, tssn);
 +
 +	setenv_ifunit();
  }
- 
+
  /*

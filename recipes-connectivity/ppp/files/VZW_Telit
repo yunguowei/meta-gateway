@@ -19,4 +19,4 @@ noccp
 novj
 usepeerdns
 persist
-connect "/usr/sbin/chat -v -f /etc/ppp/chat/VZW_Telit_chat -E" 
+connect "/usr/sbin/chat -v -f /etc/ppp/chat/VZW_Telit_chat -E"

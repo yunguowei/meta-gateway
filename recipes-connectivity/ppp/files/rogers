@@ -1,5 +1,5 @@
 # PPPD configuration for rogers
-# 
+#
 
 debug
 debug
@@ -11,7 +11,7 @@ logfile /var/log/ppp.log
 /dev/ttyACM0
 
 
-# Baudrate  
+# Baudrate
 115200
 
 # lock for use by this PPPD process only
@@ -63,7 +63,7 @@ usepeerdns
 # no exit once a connection has been made and terminated
 persist
 
-# may be required to authenticate 
+# may be required to authenticate
 # for rogers, wapuser1/wap
 user wapuser1
 password wap
@@ -71,7 +71,7 @@ password wap
 # set dryrun to dump settings
 # dryrun
 
-# fire up chat 
+# fire up chat
 # -v verbose mode
 # -s redirect logs to stderr
 connect '/usr/sbin/chat -v -s -f /etc/ppp/chat/rogers_chat 2> /var/log/chat.log'

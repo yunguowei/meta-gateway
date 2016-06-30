@@ -1,0 +1,24 @@
+From 0b89d1d6c964b81d601ff647b7249176f13060d3 Mon Sep 17 00:00:00 2001
+From: louietsai <louietsai@gmail.com>
+Date: Tue, 22 Mar 2016 15:50:13 +0800
+Subject: [PATCH] [Bug Fix] call disconnect_tty when connect script fails
+
+---
+ pppd/tty.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pppd/tty.c b/pppd/tty.c
+index d571b11..05c78f2 100644
+--- a/pppd/tty.c
++++ b/pppd/tty.c
+@@ -700,6 +700,7 @@ int connect_tty()
+ 		if (connector && connector[0]) {
+ 			if (device_script(connector, ttyfd, ttyfd, 0) < 0) {
+ 				error("Connect script failed");
++				disconnect_tty();
+ 				status = EXIT_CONNECT_FAILED;
+ 				goto errretf;
+ 			}
+-- 
+1.9.1
+

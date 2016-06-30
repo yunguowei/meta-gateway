@@ -1,5 +1,5 @@
 #
-# 
+#
 # Rogers Data Connection
 #
 # APN: internet.com
@@ -7,7 +7,7 @@
 # Password: wap
 # MCC: 302
 # MNC: 72 (If that doesn't work try 720, its already filled in, leave it at what it is)
-# 
+#
 # Name: Rogers MMS
 # APN: media.com
 # Username: media
@@ -22,14 +22,14 @@
 
 SAY "Initializing Rogers Data Connection... \n"
 
-ABORT BUSY 
-ABORT VOICE 
-ABORT DELAYED 
+ABORT BUSY
+ABORT VOICE
+ABORT DELAYED
 ABORT ERROR
-ABORT 'NO CARRIER' 
-ABORT 'NO DIALTONE' 
-ABORT 'NO DIAL TONE' 
-ABORT 'NO ANSWER' 
+ABORT 'NO CARRIER'
+ABORT 'NO DIALTONE'
+ABORT 'NO DIAL TONE'
+ABORT 'NO ANSWER'
 
 TIMEOUT 120
 
@@ -65,11 +65,11 @@ SAY "Setting PIN ... \n"
 
 SAY "Setting CGDCONT ... "
 OK 'AT+CGDCONT=1,"IP","internet.com"'
-# or 
+# or
 #OK 'AT+CGDCONT=2,"IP","isp.rogers"'
 
 OK 'AT'
 SAY "Dialing... \n"
 OK 'ATD*99***1#'
-CONNECT 
+CONNECT
 

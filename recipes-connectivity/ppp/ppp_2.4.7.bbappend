@@ -15,8 +15,8 @@ SRC_URI += "file://100-debian_ip-ip_option.patch \
             file://330-retain_foreign_default_routes.patch \
             file://340-populate_default_gateway.patch \
             file://500-add-pptp-plugin.patch \
-            file://aeris \
-            file://aeris_chat \
+            file://600-restore-old-default-route-when-there-is-no-new-one.patch \
+            file://900-Bug-Fix-call-disconnect_tty-when-connect-script-fail.patch \
             file://rogers \
             file://rogers_chat \
             file://VZW_Telit \
@@ -32,18 +32,12 @@ do_configure_prepend() {
 
 do_install_append() {
     install -d ${D}${sysconfdir}/ppp/chat/
-    install -m 0644 ${WORKDIR}/aeris_chat ${D}${sysconfdir}/ppp/chat/aeris_chat
     install -m 0644 ${WORKDIR}/rogers_chat ${D}${sysconfdir}/ppp/chat/rogers_chat
     install -m 0644 ${WORKDIR}/VZW_Telit_chat ${D}${sysconfdir}/ppp/chat/VZW_Telit_chat
     install -d ${D}${sysconfdir}/ppp/peers/
-    install -m 0644 ${WORKDIR}/aeris ${D}${sysconfdir}/ppp/peers/aeris
     install -m 0644 ${WORKDIR}/rogers ${D}${sysconfdir}/ppp/peers/rogers
     install -m 0644 ${WORKDIR}/VZW_Telit ${D}${sysconfdir}/ppp/peers/VZW_Telit
 
-    install -d -m 0755 ${D}/${base_libdir}/netifd/proto
-    install -m 0755 ${WORKDIR}/lib/netifd/ppp-up ${D}/${base_libdir}/netifd/ppp-up
-    install -m 0755 ${WORKDIR}/lib/netifd/ppp-down ${D}/${base_libdir}/netifd/ppp-down
-    install -m 0755 ${WORKDIR}/lib/netifd/proto/ppp.sh ${D}/${base_libdir}/netifd/proto/ppp.sh
 
     install -d -m 0755 ${D}/lib/netifd/proto
     install -m 0755 ${WORKDIR}/lib/netifd/ppp-up ${D}/lib/netifd/ppp-up
@@ -51,4 +45,4 @@ do_install_append() {
     install -m 0755 ${WORKDIR}/lib/netifd/proto/ppp.sh ${D}/lib/netifd/proto/ppp.sh
 }
 
-FILES_${PN} += "${base_libdir}/netifd/* ${libdir}/pppd/${PV}/pptp.so /lib/netifd/*"
+FILES_${PN} += "${libdir}/pppd/${PV}/pptp.so /lib/netifd/*"

@@ -40,7 +40,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 +    { "ifname", o_string, use_ifname,
 +      "Set physical name for PPP interface",
 +      OPT_PRIO | OPT_PRIV | OPT_STATIC, NULL, IFNAMSIZ },
- 
+
      { "maxfail", o_int, &maxfail,
        "Maximum number of unsuccessful connection attempts to allow",
 --- a/pppd/pppd.h
@@ -48,7 +48,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 @@ -71,6 +71,10 @@
  #include "eui64.h"
  #endif
- 
+
 +#ifndef IFNAMSIZ
 +#define IFNAMSIZ	16
 +#endif
@@ -69,7 +69,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 @@ -168,6 +168,10 @@ struct in6_ifreq {
  /* We can get an EIO error on an ioctl if the modem has hung up */
  #define ok_error(num) ((num)==EIO)
- 
+
 +#if !defined(PPP_DRV_NAME)
 +#define PPP_DRV_NAME	"ppp"
 +#endif /* !defined(PPP_DRV_NAME) */
@@ -84,7 +84,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 -	int x, flags;
 +	struct ifreq ifr;
 +	int x, flags, s;
- 
+
  	if (ppp_dev_fd >= 0) {
  		dbglog("in make_ppp_unit, already had /dev/ppp open?");
 @@ -645,6 +650,30 @@ static int make_ppp_unit()
@@ -117,19 +117,19 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 +
  	return x;
  }
- 
+
 --- a/pppstats/pppstats.c
 +++ b/pppstats/pppstats.c
 @@ -506,10 +506,12 @@ main(argc, argv)
      if (argc > 0)
  	interface = argv[0];
- 
+
 +#if 0
      if (sscanf(interface, PPP_DRV_NAME "%d", &unit) != 1) {
  	fprintf(stderr, "%s: invalid interface '%s' specified\n",
  		progname, interface);
      }
 +#endif
- 
+
  #ifndef STREAMS
      {

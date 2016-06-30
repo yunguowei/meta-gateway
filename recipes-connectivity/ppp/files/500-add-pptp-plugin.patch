@@ -1,3 +1,54 @@
+From 88d51a2637f4c97f1aa039df7dd734c6e7a34d8e Mon Sep 17 00:00:00 2001
+From: "Yue.Shen" <Yue.Shen@windriver.com>
+Date: Wed, 23 Mar 2016 16:19:30 +0800
+Subject: [PATCH] add pptp plugin
+
+Signed-off-by: Yue.Shen <Yue.Shen@windriver.com>
+---
+ configure                         |    2 +-
+ pppd/plugins/Makefile.linux       |    2 +-
+ pppd/plugins/pptp/Makefile.linux  |   31 ++
+ pppd/plugins/pptp/dirutil.c       |   68 +++
+ pppd/plugins/pptp/dirutil.h       |   14 +
+ pppd/plugins/pptp/orckit_quirks.c |   86 +++
+ pppd/plugins/pptp/orckit_quirks.h |   27 +
+ pppd/plugins/pptp/pppd-pptp.8     |   68 +++
+ pppd/plugins/pptp/pptp.c          |  303 +++++++++++
+ pppd/plugins/pptp/pptp_callmgr.c  |  381 +++++++++++++
+ pppd/plugins/pptp/pptp_callmgr.h  |   17 +
+ pppd/plugins/pptp/pptp_ctrl.c     | 1077 +++++++++++++++++++++++++++++++++++++
+ pppd/plugins/pptp/pptp_ctrl.h     |   57 ++
+ pppd/plugins/pptp/pptp_msg.h      |  303 +++++++++++
+ pppd/plugins/pptp/pptp_options.h  |   41 ++
+ pppd/plugins/pptp/pptp_quirks.c   |   54 ++
+ pppd/plugins/pptp/pptp_quirks.h   |   59 ++
+ pppd/plugins/pptp/util.c          |  109 ++++
+ pppd/plugins/pptp/util.h          |   31 ++
+ pppd/plugins/pptp/vector.c        |  209 +++++++
+ pppd/plugins/pptp/vector.h        |   31 ++
+ 21 files changed, 2968 insertions(+), 2 deletions(-)
+ create mode 100644 pppd/plugins/pptp/Makefile.linux
+ create mode 100644 pppd/plugins/pptp/dirutil.c
+ create mode 100644 pppd/plugins/pptp/dirutil.h
+ create mode 100644 pppd/plugins/pptp/orckit_quirks.c
+ create mode 100644 pppd/plugins/pptp/orckit_quirks.h
+ create mode 100644 pppd/plugins/pptp/pppd-pptp.8
+ create mode 100644 pppd/plugins/pptp/pptp.c
+ create mode 100644 pppd/plugins/pptp/pptp_callmgr.c
+ create mode 100644 pppd/plugins/pptp/pptp_callmgr.h
+ create mode 100644 pppd/plugins/pptp/pptp_ctrl.c
+ create mode 100644 pppd/plugins/pptp/pptp_ctrl.h
+ create mode 100644 pppd/plugins/pptp/pptp_msg.h
+ create mode 100644 pppd/plugins/pptp/pptp_options.h
+ create mode 100644 pppd/plugins/pptp/pptp_quirks.c
+ create mode 100644 pppd/plugins/pptp/pptp_quirks.h
+ create mode 100644 pppd/plugins/pptp/util.c
+ create mode 100644 pppd/plugins/pptp/util.h
+ create mode 100644 pppd/plugins/pptp/vector.c
+ create mode 100644 pppd/plugins/pptp/vector.h
+
+diff --git a/configure b/configure
+index 6a55e0f..2f09e67 100755
 --- a/configure
 +++ b/configure
 @@ -195,7 +195,7 @@ if [ -d "$ksrc" ]; then
@@ -9,17 +60,22 @@
  	mkmkf $dir/Makefile.$makext $dir/Makefile
      done
      if [ -f $ksrc/Makefile.$makext$archvariant ]; then
+diff --git a/pppd/plugins/Makefile.linux b/pppd/plugins/Makefile.linux
+index ae64149..02194b1 100644
 --- a/pppd/plugins/Makefile.linux
 +++ b/pppd/plugins/Makefile.linux
 @@ -9,7 +9,7 @@ BINDIR = $(DESTDIR)/sbin
  MANDIR = $(DESTDIR)/share/man/man8
  LIBDIR = $(DESTDIR)/lib/pppd/$(VERSION)
- 
+
 -SUBDIRS := rp-pppoe pppoatm pppol2tp
 +SUBDIRS := rp-pppoe pppoatm pppol2tp pptp
  # Uncomment the next line to include the radius authentication plugin
  SUBDIRS += radius
  PLUGINS := minconn.so passprompt.so passwordfd.so winbind.so
+diff --git a/pppd/plugins/pptp/Makefile.linux b/pppd/plugins/pptp/Makefile.linux
+new file mode 100644
+index 0000000..2131641
 --- /dev/null
 +++ b/pppd/plugins/pptp/Makefile.linux
 @@ -0,0 +1,31 @@
@@ -54,6 +110,9 @@
 +clean:
 +	rm -f *.o *.so
 +
+diff --git a/pppd/plugins/pptp/dirutil.c b/pppd/plugins/pptp/dirutil.c
+new file mode 100644
+index 0000000..e7b1a77
 --- /dev/null
 +++ b/pppd/plugins/pptp/dirutil.c
 @@ -0,0 +1,68 @@
@@ -125,6 +184,9 @@
 +    if (path != NULL) free(path);
 +    return retval;
 +}
+diff --git a/pppd/plugins/pptp/dirutil.h b/pppd/plugins/pptp/dirutil.h
+new file mode 100644
+index 0000000..4c9aa87
 --- /dev/null
 +++ b/pppd/plugins/pptp/dirutil.h
 @@ -0,0 +1,14 @@
@@ -142,6 +204,9 @@
 +char *stripslash(char *pathname);
 +/* ensure dirname exists, creating it if necessary. */
 +int make_valid_path(char *dirname, mode_t mode);
+diff --git a/pppd/plugins/pptp/orckit_quirks.c b/pppd/plugins/pptp/orckit_quirks.c
+new file mode 100644
+index 0000000..1d03737
 --- /dev/null
 +++ b/pppd/plugins/pptp/orckit_quirks.c
 @@ -0,0 +1,86 @@
@@ -231,6 +296,9 @@
 +}
 +
 +
+diff --git a/pppd/plugins/pptp/orckit_quirks.h b/pppd/plugins/pptp/orckit_quirks.h
+new file mode 100644
+index 0000000..ad0193d
 --- /dev/null
 +++ b/pppd/plugins/pptp/orckit_quirks.h
 @@ -0,0 +1,27 @@
@@ -261,6 +329,9 @@
 +orckit_atur3_start_ctrl_conn_hook(struct pptp_start_ctrl_conn* packet);
 +
 +#endif /* INC_ORCKIT_QUIRKS_H_ */
+diff --git a/pppd/plugins/pptp/pppd-pptp.8 b/pppd/plugins/pptp/pppd-pptp.8
+new file mode 100644
+index 0000000..a4a35a7
 --- /dev/null
 +++ b/pppd/plugins/pptp/pppd-pptp.8
 @@ -0,0 +1,68 @@
@@ -285,9 +356,9 @@
 +.LP
 +The PPTP plugin for pppd performs interaction with pptp kernel module
 +and has built-in call manager (client part of PPTP).
-+It pasees necessary paremeters from \fIoptions\fR into kernel module 
-+to configure ppp-pptp channel. If it runs in client mode, then additionally 
-+call manager starts up. PPTPD daemon automaticaly invokes this plugin
++It pasees necessary paremeters from \fIoptions\fR into kernel module
++to configure ppp-pptp channel. If it runs in client mode, then additionally
++call manager starts up. PPTPD daemon automatically invokes this plugin
 +in server mode and passes necessary options, so additional configuration
 +is not needed.
 +
@@ -298,7 +369,7 @@
 +Specifies ip address or hostname of pptp server.
 +.TP
 +.BI "pptp_window " packets " (optional)"
-+The amount of sliding window size. 
++The amount of sliding window size.
 +Set to 0 to turn off sliding window.
 +    to 3-10 for low speed connections.
 +    to >10 for hi speed connections.
@@ -332,29 +403,12 @@
 +
 +.SH AUTHOR
 +xeb xeb@mail.ru
+diff --git a/pppd/plugins/pptp/pptp.c b/pppd/plugins/pptp/pptp.c
+new file mode 100644
+index 0000000..79dbc16
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp.c
-@@ -0,0 +1,323 @@
-+/***************************************************************************
-+ *   Copyright (C) 2006 by Kozlov D. <xeb@mail.ru>                         *
-+ *   some cleanup done (C) 2012 by Daniel Golle <dgolle@allnet.de>         *
-+ *                                                                         *
-+ *   This program is free software; you can redistribute it and/or modify  *
-+ *   it under the terms of the GNU General Public License as published by  *
-+ *   the Free Software Foundation; either version 2 of the License, or     *
-+ *   (at your option) any later version.                                   *
-+ *                                                                         *
-+ *   This program is distributed in the hope that it will be useful,       *
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
-+ *   GNU General Public License for more details.                          *
-+ *                                                                         *
-+ *   You should have received a copy of the GNU General Public License     *
-+ *   along with this program; if not, write to the                         *
-+ *   Free Software Foundation, Inc.,                                       *
-+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
-+ ***************************************************************************/
-+
+@@ -0,0 +1,303 @@
 +#define PPTP_VERSION "1.00"
 +
 +#ifdef HAVE_CONFIG_H
@@ -658,6 +712,9 @@
 +    the_channel = &pptp_channel;
 +    modem = 0;
 +}
+diff --git a/pppd/plugins/pptp/pptp_callmgr.c b/pppd/plugins/pptp/pptp_callmgr.c
+new file mode 100644
+index 0000000..14245ad
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_callmgr.c
 @@ -0,0 +1,381 @@
@@ -1042,6 +1099,9 @@
 +    snprintf(where->sun_path, sizeof(where->sun_path),
 +            PPTP_SOCKET_PREFIX "%s:%i", remoteaddr,call_ID);
 +}
+diff --git a/pppd/plugins/pptp/pptp_callmgr.h b/pppd/plugins/pptp/pptp_callmgr.h
+new file mode 100644
+index 0000000..634243a
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_callmgr.h
 @@ -0,0 +1,17 @@
@@ -1062,6 +1122,9 @@
 +void callmgr_name_unixsock(struct sockaddr_un *where,
 +			   struct in_addr inetaddr,
 +			   struct in_addr localbind);
+diff --git a/pppd/plugins/pptp/pptp_ctrl.c b/pppd/plugins/pptp/pptp_ctrl.c
+new file mode 100644
+index 0000000..2b68340
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_ctrl.c
 @@ -0,0 +1,1077 @@
@@ -1193,7 +1256,7 @@
 +#define PPTP_GENERAL_ERROR_BAD_CALLID           5
 +    { "(Bad-Call ID)", "The Call ID is invalid in this context" },
 +#define PPTP_GENERAL_ERROR_PAC_ERROR            6
-+    { "(PAC-Error)", "A generic vendor-specific error occured in the PAC" }
++    { "(PAC-Error)", "A generic vendor-specific error occurred in the PAC" }
 +};
 +
 +#define  MAX_GENERAL_ERROR ( sizeof(pptp_general_errors) / \
@@ -1922,7 +1985,7 @@
 +            u_int16_t callid = ntoh16(packet->call_id_peer);
 +            dbglog("Received Outgoing Call Reply.");
 +            if (!vector_search(conn->call, (int) callid, &call)) {
-+                dbglog("PPTP_OUT_CALL_RPLY received for non-existant call: "
++                dbglog("PPTP_OUT_CALL_RPLY received for non-existent call: "
 +                        "peer call ID (us)  %d call ID (them) %d.",
 +                        callid, ntoh16(packet->call_id));
 +                break;
@@ -2142,6 +2205,9 @@
 +    }
 +    pptp_reset_timer();
 +}
+diff --git a/pppd/plugins/pptp/pptp_ctrl.h b/pppd/plugins/pptp/pptp_ctrl.h
+new file mode 100644
+index 0000000..a7bb506
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_ctrl.h
 @@ -0,0 +1,57 @@
@@ -2202,11 +2268,14 @@
 +void   pptp_call_closure_put(PPTP_CONN * conn, PPTP_CALL * call, void *cl);
 +
 +#endif /* INC_PPTP_CTRL_H */
+diff --git a/pppd/plugins/pptp/pptp_msg.h b/pppd/plugins/pptp/pptp_msg.h
+new file mode 100644
+index 0000000..b6cec27
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_msg.h
 @@ -0,0 +1,303 @@
-+/*  pptp.h:  packet structures and magic constants for the PPTP protocol 
-+ *           C. Scott Ananian <cananian@alumni.princeton.edu>            
++/*  pptp.h:  packet structures and magic constants for the PPTP protocol
++ *           C. Scott Ananian <cananian@alumni.princeton.edu>
 + *
 + * $Id: pptp_msg.h,v 1.3 2003/02/15 10:37:21 quozl Exp $
 + */
@@ -2444,7 +2513,7 @@
 +{ hton16(PPTP_CTRL_SIZE(type)), \
 +  hton16(PPTP_MESSAGE_CONTROL), \
 +  hton32(PPTP_MAGIC),           \
-+  hton16(type), 0 }             
++  hton16(type), 0 }
 +
 +#define PPTP_CTRL_SIZE(type) ( \
 +(type==PPTP_START_CTRL_CONN_RQST)?sizeof(struct pptp_start_ctrl_conn):	\
@@ -2503,11 +2572,14 @@
 +  u_int16_t payload_len;	/* size of ppp payload, not inc. gre header */
 +  u_int16_t call_id;		/* peer's call_id for this session */
 +  u_int32_t seq;		/* sequence number.  Present if S==1 */
-+  u_int32_t ack;		/* seq number of highest packet recieved by */
++  u_int32_t ack;		/* seq number of highest packet received by */
 +  				/*  sender in this session */
 +};
 +
 +#endif /* INC_PPTP_H */
+diff --git a/pppd/plugins/pptp/pptp_options.h b/pppd/plugins/pptp/pptp_options.h
+new file mode 100644
+index 0000000..ebc1c31
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_options.h
 @@ -0,0 +1,41 @@
@@ -2552,6 +2624,9 @@
 +#endif
 +
 +#endif /* INC_PPTP_OPTIONS_H */
+diff --git a/pppd/plugins/pptp/pptp_quirks.c b/pppd/plugins/pptp/pptp_quirks.c
+new file mode 100644
+index 0000000..e4c9013
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_quirks.c
 @@ -0,0 +1,54 @@
@@ -2609,6 +2684,9 @@
 +}
 +
 +
+diff --git a/pppd/plugins/pptp/pptp_quirks.h b/pppd/plugins/pptp/pptp_quirks.h
+new file mode 100644
+index 0000000..291f3d6
 --- /dev/null
 +++ b/pppd/plugins/pptp/pptp_quirks.h
 @@ -0,0 +1,59 @@
@@ -2671,6 +2749,9 @@
 +
 +
 +#endif /* INC_PPTP_QUIRKS_H */
+diff --git a/pppd/plugins/pptp/util.c b/pppd/plugins/pptp/util.c
+new file mode 100644
+index 0000000..d9ae11b
 --- /dev/null
 +++ b/pppd/plugins/pptp/util.c
 @@ -0,0 +1,109 @@
@@ -2721,13 +2802,13 @@
 +int sigpipe_create()
 +{
 +  int rc;
-+  
++
 +  rc = pipe(sigpipe);
 +  if (rc < 0) return rc;
-+  
++
 +  fcntl(sigpipe[0], F_SETFD, FD_CLOEXEC);
 +  fcntl(sigpipe[1], F_SETFD, FD_CLOEXEC);
-+  
++
 +#ifdef O_NONBLOCK
 +#define FLAG_TO_SET O_NONBLOCK
 +#else
@@ -2737,7 +2818,7 @@
 +#define FLAG_TO_SET FNDELAY
 +#endif
 +#endif
-+  
++
 +  rc = fcntl(sigpipe[1], F_GETFL);
 +  if (rc != -1)
 +    rc = fcntl(sigpipe[1], F_SETFL, rc | FLAG_TO_SET);
@@ -2783,6 +2864,9 @@
 +  close(sigpipe[1]);
 +}
 +
+diff --git a/pppd/plugins/pptp/util.h b/pppd/plugins/pptp/util.h
+new file mode 100644
+index 0000000..acc5a4f
 --- /dev/null
 +++ b/pppd/plugins/pptp/util.h
 @@ -0,0 +1,31 @@
@@ -2817,6 +2901,9 @@
 +void sigpipe_close();
 +
 +#endif /* INC_UTIL_H */
+diff --git a/pppd/plugins/pptp/vector.c b/pppd/plugins/pptp/vector.c
+new file mode 100644
+index 0000000..ceb983d
 --- /dev/null
 +++ b/pppd/plugins/pptp/vector.c
 @@ -0,0 +1,209 @@
@@ -2892,7 +2979,7 @@
 +}
 +
 +/*** vector_insert*************************************************************
-+ * nice thing about file descriptors is that we are assured by POSIX 
++ * nice thing about file descriptors is that we are assured by POSIX
 + * that they are monotonically increasing.
 + */
 +int vector_insert(VECTOR *v, int key, PPTP_CALL * call)
@@ -2977,7 +3064,7 @@
 +/*** vector_scan ***************************************************************
 + * Hmm.  Let's be fancy and use a binary search for the first
 + * unused key, taking advantage of the list is stored sorted; ie
-+ * we can look at pointers and keys at two different locations, 
++ * we can look at pointers and keys at two different locations,
 + * and if (ptr1 - ptr2) = (key1 - key2) then all the slots
 + * between ptr1 and ptr2 are filled.  Note that ptr1-ptr2 should
 + * never be greater than key1-key2 (no duplicate keys!)... we
@@ -3029,6 +3116,9 @@
 +    assert(0 <= n && n < vector_size(v));
 +    return v->item[n].call;
 +}
+diff --git a/pppd/plugins/pptp/vector.h b/pppd/plugins/pptp/vector.h
+new file mode 100644
+index 0000000..b18899f
 --- /dev/null
 +++ b/pppd/plugins/pptp/vector.h
 @@ -0,0 +1,31 @@
@@ -3063,3 +3153,6 @@
 +PPTP_CALL * vector_get_Nth(VECTOR *v, int n);
 +
 +#endif /* INC_VECTOR_H */
+--
+1.9.1
+

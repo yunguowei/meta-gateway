@@ -10,12 +10,12 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 @@ -548,7 +548,9 @@ discovery(PPPoEConnection *conn)
  	conn->discoveryState = STATE_SENT_PADI;
  	waitForPADO(conn, timeout);
- 
+
 +#if 0
  	timeout *= 2;
 +#endif
      } while (conn->discoveryState == STATE_SENT_PADI);
- 
+
      timeout = conn->discoveryTimeout;
 @@ -563,7 +565,9 @@ discovery(PPPoEConnection *conn)
  	sendPADR(conn);
@@ -25,5 +25,5 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
  	timeout *= 2;
 +#endif
      } while (conn->discoveryState == STATE_SENT_PADR);
- 
+
      /* We're done. */

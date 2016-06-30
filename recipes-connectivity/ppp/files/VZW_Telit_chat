@@ -1,4 +1,4 @@
-SAY "CDMA chat\n" 
+SAY "CDMA chat\n"
 ABORT 'NO DIAL TONE'
 ABORT 'NO DIALTONE'
 ABORT 'NO ANSWER'
@@ -9,9 +9,9 @@ ABORT 'BUSY'
 '' 'AT'
 OK 'ATZ'
 OK 'AT+CSQ'
-SAY "Dialing...\n" 
+SAY "Dialing...\n"
 OK 'ATD#777'
-SAY "Waiting for CONNECT...\n" 
+SAY "Waiting for CONNECT...\n"
 TIMEOUT 120
 CONNECT ''
-SAY "Connected\n" 
+SAY "Connected\n"

@@ -13,12 +13,12 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 --- a/pppd/main.c
 +++ b/pppd/main.c
 @@ -318,6 +318,8 @@ main(argc, argv)
- 
+
      strlcpy(path_ipup, _PATH_IPUP, sizeof(path_ipup));
      strlcpy(path_ipdown, _PATH_IPDOWN, sizeof(path_ipdown));
 +    strlcpy(path_ipv6up, _PATH_IPV6UP, sizeof(path_ipv6up));
 +    strlcpy(path_ipv6down, _PATH_IPV6DOWN, sizeof(path_ipv6down));
- 
+
      link_stats_valid = 0;
      new_phase(PHASE_INITIALIZE);
 --- a/pppd/options.c
@@ -35,7 +35,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 @@ -290,6 +292,13 @@ option_t general_options[] = {
        "Set pathname of ip-down script",
        OPT_PRIV|OPT_STATIC, NULL, MAXPATHLEN },
- 
+
 +    { "ipv6-up-script", o_string, path_ipv6up,
 +      "Set pathname of ipv6-up script",
 +      OPT_PRIV|OPT_STATIC, NULL, MAXPATHLEN },
@@ -56,7 +56,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 +	ipv6cp_script(path_ipv6up);
      }
  }
- 
+
 @@ -1339,7 +1339,7 @@ ipv6cp_down(f)
      /* Execute the ipv6-down script */
      if (ipv6cp_script_state == s_up && ipv6cp_script_pid == 0) {
@@ -65,7 +65,7 @@ Signed-off-by: Jo-Philipp Wich <jow@openwrt.org>
 +	ipv6cp_script(path_ipv6down);
      }
  }
- 
+
 @@ -1382,13 +1382,13 @@ ipv6cp_script_done(arg)
      case s_up:
  	if (ipv6cp_fsm[0].state != OPENED) {
