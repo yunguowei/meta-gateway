@@ -7,7 +7,7 @@ HOMEPAGE = "http://www.lua.org/"
 PR = "r1"
 
 DEPENDS += "readline"
-SRC_URI = "http://download.windriver.org/proprietary-downloads/lua-${PV}.tar.gz \
+SRC_URI = "http://www.lua.org/ftp/lua-${PV}.tar.gz \
            file://bitwise_operators.patch \
            file://lua5.1.pc \
 "
