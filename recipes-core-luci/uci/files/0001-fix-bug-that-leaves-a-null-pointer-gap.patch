@@ -1,3 +1,6 @@
+in the for loop, when continue statement hit, i would be
+increased, but not value written into configs[i], leaves
+a null hole.
 ---
  file.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)

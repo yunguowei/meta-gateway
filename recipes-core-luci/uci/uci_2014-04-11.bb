@@ -9,7 +9,6 @@ HOMEPAGE = "http://wiki.openwrt.org/doc/uci"
 SECTION = "console/utils"
 
 DEPENDS = "lua libubox"
-
 LICENSE = "GPLv2 & LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://cli.c;beginline=3;endline=12;md5=61ac10aebfcddf1cf7371220687237d3 \
                     file://delta.c;beginline=3;endline=12;md5=c7e4171d506df594d5b9d080e356308d \
@@ -26,12 +25,13 @@ SRCREV = "e339407372ffc70b1451e4eda218c01aa95a6a7f"
 
 
 PR = "r2"
-inherit cmake 
+inherit cmake
 
 PARALLEL_MAKE = ""
 
 EXTRA_OECMAKE="-DCMAKE_SKIP_RPATH:BOOL=YES \
                -DBUILD_LUA=ON -DLUAPATH=${libdir}/lua/5.1/"
+
 B = "${S}"
 do_install() {
     install -d -m 0755 ${D}/${base_sbindir}
