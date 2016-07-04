@@ -1,0 +1,68 @@
+From c714d92c05d6c8784bc067ce53eddc8d0c51cb26 Mon Sep 17 00:00:00 2001
+From: "Shoutao.Li" <Shoutao.Li@windriver.com>
+Date: Fri, 11 Sep 2015 14:50:03 +0800
+Subject: [PATCH] static compilation "standard" target
+
+"standard" target is originally compiled into a dynamic shared library.
+But there is something wrong when loading "standard" target by "dlopen"
+operation in xtable.c, which result in "standard" target can't be
+registration.
+
+To avoid this issue, directly move "standard" target difination and
+registration operation to xtable.c file.
+
+Signed-off-by: Shoutao.Li <Shoutao.Li@windriver.com>
+---
+ libxtables/xtables.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/libxtables/xtables.c b/libxtables/xtables.c
+index fb60c01..2e1c7dc 100644
+--- a/libxtables/xtables.c
++++ b/libxtables/xtables.c
+@@ -537,6 +537,22 @@ void xtables_parse_interface(const char *arg, char *vianame,
+ }
+ 
+ #ifndef NO_SHARED_LIBS
++static void standard_help(void)
++{
++	printf(
++"standard match options:\n"
++"(If target is DROP, ACCEPT, RETURN or nothing)\n");
++}
++
++static struct xtables_target standard_target = {
++	.family		= NFPROTO_UNSPEC,
++	.name		= "standard",
++	.version	= XTABLES_VERSION,
++	.size		= XT_ALIGN(sizeof(int)),
++	.userspacesize	= XT_ALIGN(sizeof(int)),
++	.help		= standard_help,
++};
++
+ static void *load_extension(const char *search_path, const char *af_prefix,
+     const char *name, bool is_target)
+ {
+@@ -564,9 +580,16 @@ static void *load_extension(const char *search_path, const char *af_prefix,
+ 					strerror(errno));
+ 				return NULL;
+ 			}
+-			if (dlopen(path, RTLD_NOW) == NULL) {
+-				fprintf(stderr, "%s: %s\n", path, dlerror());
+-				break;
++
++			if (strcmp(name, "standard") == 0)
++			{
++				xtables_register_target(&standard_target);
++			}
++			else{
++				if (dlopen(path, RTLD_NOW) == NULL) {
++					fprintf(stderr, "%s: %s\n", path, dlerror());
++					break;
++				}
+ 			}
+ 
+ 			if (is_target)
+-- 
+1.9.1
+
