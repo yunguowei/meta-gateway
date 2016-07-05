@@ -1,5 +1,5 @@
 [Unit]
-Description=Wind River Gateway Initialization (stage 2).
+Description=Pulsar Gateway Initialization (stage 2).
 Before=netifd.service shutdown.target
 After=dbus.service systemd-udev-trigger.service run-postinsts.service systemd-remount-fs.service systemd-tmpfiles-setup.service tmp.mount
 DefaultDependencies=no

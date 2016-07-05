@@ -1,5 +1,5 @@
 [Unit]
-Description=Wind River Gateway Customer Run Once Function
+Description=Pulsar Gateway Customer Run Once Function
 After=network-online.target
 
 [Service]

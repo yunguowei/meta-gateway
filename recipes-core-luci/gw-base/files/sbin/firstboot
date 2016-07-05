@@ -27,7 +27,7 @@ hostname_id=$(cat /sys/class/net/eth0/address 2>&- | sed 's/://g')
     [ -z "${hostname_id}" ] && hostname_id=$(date +%N)
 }
 declare -u hostname
-hostname="WR-GateWay-${hostname_id:0-4}"
+hostname="PulsarGateway-${hostname_id:0-4}"
 uci set system.@system[0].hostname="$hostname"
 uci commit system
 echo "$hostname" > /proc/sys/kernel/hostname
