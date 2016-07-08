@@ -5,24 +5,11 @@ UMTS, EDGE, GPRS, GSM) data devices within the Linux environment."
 LICENSE = "GPLv2"
 SECTION = "console/utils"
 PR = "r0"
-
 SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}.${PV}.tgz \
-            file://3g.chat \
-            file://3g.chat.comgt \
             file://3g.sh \
             file://3g.usb \
-            file://evdo.chat \
-            file://getcardinfo.gcom \
-            file://getcarrier.gcom \
-            file://getcnum.gcom \
-            file://getsn.gcom \
-            file://getrev.gcom \
-            file://getimsi.gcom \
-            file://getreg.gcom \
-            file://modem3g.gcom \
-            file://getstrength.gcom \
-            file://setmode.gcom \
-            file://setpin.gcom \
+            file://chatscripts/ \
+            file://gcomscripts/ \
             file://001-compile_fix.patch \
             "
 
@@ -36,9 +23,8 @@ do_install() {
     install -d ${D}/${sysconfdir}/gcom
     install -d ${D}/${sysconfdir}/hotplug.d/tty
 
-    install -m 0755 ${WORKDIR}/*.chat ${D}/${sysconfdir}/chatscripts
-    install -m 0755 ${WORKDIR}/3g.chat.comgt ${D}/${sysconfdir}/chatscripts
-    install -m 0755 ${WORKDIR}/*.gcom ${D}/${sysconfdir}/gcom
+    install -m 0755 ${WORKDIR}/chatscripts/* ${D}/${sysconfdir}/chatscripts
+    install -m 0755 ${WORKDIR}/gcomscripts/* ${D}/${sysconfdir}/gcom
     install -m 0755 ${WORKDIR}/3g.usb ${D}/${sysconfdir}/hotplug.d/tty/30-3g
 
     install -d ${D}/${base_libdir}/netifd/proto

@@ -99,6 +99,9 @@ proto_3g_setup() {
 		ps -ef | grep "pppd.*$device" | grep -q "$pid" && kill -9 "$pid"
 	done
 
+	#light up led
+	gcom -d "$device" -s /etc/gcom/ledon.gcom
+
 	chat_cmd=$(which chat)
 	connect="${apn:+USE_APN=$apn }$chat_cmd -t5 -v -s -S -E -f $chat"
 	ppp_generic_setup "$interface" \
@@ -115,12 +118,17 @@ proto_3g_setup() {
 		proto_add_dns_server "$d"
 	done
 	proto_send_update "$interface"
-
 	return 0
 }
 
 proto_3g_teardown() {
+	json_get_var device device
+
 	proto_kill_command "$interface"
+
+	#wait for pppd to releasing device
+	sleep 2
+	gcom -d "$device" -s /etc/gcom/ledoff.gcom
 }
 
 add_protocol 3g
