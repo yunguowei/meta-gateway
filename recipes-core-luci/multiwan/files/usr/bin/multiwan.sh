@@ -130,7 +130,12 @@ mwan_load_config() {
         config_get failover $iface "failover_to" "none"
         eval MW_${iface}_interval=$interval
         eval MW_${iface}_failover=$failover
-        eval MW_${iface}_device=$(uci -q get network.${iface}.ifname)
+        eval proto=$(uci -q get network.${iface}.proto)
+        if [ "$proto" == "3g" ]; then
+            eval MW_${iface}_device="3g-${iface}"
+        else
+            eval MW_${iface}_device=$(uci -q get network.${iface}.ifname)
+        fi
     }
 
     config_load "multiwan"
