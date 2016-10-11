@@ -6,9 +6,6 @@
 . /lib/functions.sh
 . /lib/config/uci.sh
 
-#Impoart Intel gpg public key
-[ -f /usr/bin/rpm ] && rpm --import /etc/gw_rpm_pgp_public_key 2>/dev/null
-
 if [ -e /etc/.extend_partition ] ; then
     # When dd a image to a lager size device and boot it, need
     # to extend partition to use all the space in the device.
