@@ -12,7 +12,6 @@ SRC_URI += " \
     file://sysctl.conf \
     file://bin/ipcalc.sh \
     file://bin/login.sh \
-    file://etc/gw_rpm_pgp_public_key \
     file://etc/rc.common \
     file://etc/conntrackd/conntrackd.conf \
     file://etc/sysconfig/arptables \
@@ -38,7 +37,6 @@ do_compile[noexec] = "1"
 do_install() {
     #install /etc
     install -d -m 0755 ${D}/etc
-    install -m 0600 ${WORKDIR}/etc/gw_rpm_pgp_public_key ${D}/etc/
     install -m 0755 ${WORKDIR}/etc/rc.common ${D}/etc/
 
     install -d -m 0755 ${D}/etc/conntrackd
