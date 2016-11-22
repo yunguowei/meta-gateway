@@ -131,11 +131,16 @@ def detect_3g_modem():
     uci['modem']['SerialNumber'] = None
 
     device = uci['modem'].get('statedev', None)
+    count = 1
 
     if uci['modem']['present'] != 'Yes':
         uci['wwan']['proto'] = 'none'
     elif device is not None and os.path.exists(device):
-        for line in comgt_get(device, 'modem3g.gcom').split('\n'):
+        lines = comgt_get(device, 'modem3g.gcom').split('\n')
+        while len(lines) < 4 and count < 5:
+            lines = comgt_get(device, 'modem3g.gcom').split('\n')
+            count += 1
+        for line in lines:
             config, option, value = line.split('|')
             uci[config.strip()][option.strip()] = value.strip()
         try:
@@ -153,6 +158,7 @@ def detect_3g_modem():
         current_apn = uci_get('network', 'wwan', 'apn')
         log('Current APN: %s' % current_apn)
         uci['wwan'] = query_service_provider(imsi, pdp_apn, current_apn)
+	uci['wwan']['proto'] = uci['modem']['protoall']
     else:
         uci['sim'] = {'IMSI': None, 'operator': None, 'present': 'No'}
 
