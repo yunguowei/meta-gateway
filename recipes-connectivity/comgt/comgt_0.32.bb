@@ -8,6 +8,7 @@ PR = "r0"
 SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}.${PV}.tgz \
             file://3g.sh \
             file://3g.usb \
+	    file://ncm.sh \
             file://chatscripts/ \
             file://gcomscripts/ \
             file://001-compile_fix.patch \
@@ -32,6 +33,7 @@ do_install() {
 
     install -d ${D}/lib/netifd/proto
     install -m 0755 ${WORKDIR}/3g.sh ${D}/lib/netifd/proto
+    install -m 0755 ${WORKDIR}/ncm.sh ${D}/lib/netifd/proto
 
     install -m 0755 ${S}/comgt ${D}/${bindir}
     cd ${D}/${bindir};ln -sf comgt gcom
