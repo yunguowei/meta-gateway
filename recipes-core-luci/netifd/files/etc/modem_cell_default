@@ -4,3 +4,5 @@
 Telit|HE910|1bc7|0021|3g|ttyACM0|ttyACM3
 Dell|DW5580|413c|81ba|3g|ttyACM0|ttyACM3
 Dell|DW5812|413c|81bb|3g|ttyACM0|ttyACM0
+Sierra|HL8548|1519|0020|3g|ttyACM0|ttyACM3
+Huawei|ME909s|12d1|15c1|ncm|ttyUSB0|ttyUSB2
