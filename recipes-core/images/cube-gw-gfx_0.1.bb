@@ -51,6 +51,8 @@ IMAGE_INSTALL += "multiwan"
 IMAGE_INSTALL += "gw-base"
 IMAGE_INSTALL += "gw-boot"
 IMAGE_INSTALL += "comgt"
+IMAGE_INSTALL += "uqmi"
+IMAGE_INSTALL += "umbim"
 
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_GFX_EXTRA_INSTALL}"
