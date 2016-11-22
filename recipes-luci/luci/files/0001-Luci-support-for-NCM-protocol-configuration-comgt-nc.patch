@@ -1,0 +1,101 @@
+From c78a30e3dd037ea429288e6c81fc2c14e5dd0c94 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=B6rg=20Sch=C3=BCler-Maroldt?=
+ <joerg@schueler-maroldt.de>
+Date: Tue, 13 Sep 2016 12:06:32 +0200
+Subject: [PATCH] Luci support for NCM protocol configuration (comgt-ncm)
+
+---
+ protocols/luci-proto-ncm/Makefile                  | 14 +++++++++
+ .../luasrc/model/cbi/admin_network/proto_ncm.lua   | 35 ++++++++++++++++++++++
+ .../luasrc/model/network/proto_ncm.lua             | 16 ++++++++++
+ 3 files changed, 65 insertions(+)
+ create mode 100644 protocols/luci-proto-ncm/Makefile
+ create mode 100644 protocols/luci-proto-ncm/luasrc/model/cbi/admin_network/proto_ncm.lua
+ create mode 100644 protocols/luci-proto-ncm/luasrc/model/network/proto_ncm.lua
+
+diff --git a/protocols/luci-proto-ncm/Makefile b/protocols/luci-proto-ncm/Makefile
+new file mode 100644
+index 0000000..38b49e3
+--- /dev/null
++++ b/protocols/luci-proto-ncm/Makefile
+@@ -0,0 +1,14 @@
++#
++# Copyright (C) 2008-2014 The LuCI Team <luci@lists.subsignal.org>
++#
++# This is free software, licensed under the Apache License, Version 2.0 .
++#
++
++include $(TOPDIR)/rules.mk
++
++LUCI_TITLE:=Support for NCM Protocol
++LUCI_DEPENDS:=+comgt-ncm
++
++include ../../luci.mk
++
++# call BuildPackage - OpenWrt buildroot signature
+diff --git a/protocols/luci-proto-ncm/luasrc/model/cbi/admin_network/proto_ncm.lua b/protocols/luci-proto-ncm/luasrc/model/cbi/admin_network/proto_ncm.lua
+new file mode 100644
+index 0000000..a1c136f
+--- /dev/null
++++ b/protocols/luci-proto-ncm/luasrc/model/cbi/admin_network/proto_ncm.lua
+@@ -0,0 +1,35 @@
++-- Copyright 2016 Joerg Schueler-Maroldt <schueler.maroldt@gmail.com>
++-- Licensed to the public under the Apache License 2.0.
++
++local map, section, net = ...
++
++local device, apn, pincode, auth, username, password
++local ipv6, maxwait, defaultroute, metric, peerdns, dns,
++      keepalive_failure, keepalive_interval, demand
++
++
++ifname = section:taboption("general", Value, "ifname", translate("Network device"))
++ifname.rmempty = false
++local ifname_suggestions = nixio.fs.glob("/dev/wwan[0-9]*")
++if ifname_suggestions then
++	local node
++	for node in ifname_suggestions do
++		ifname:value(node)
++	end
++end
++
++apn = section:taboption("general", Value, "apn", translate("Access Point Name (APN)"))
++pincode = section:taboption("general", Value, "pincode", translate("SIM-Pincode"))
++username = section:taboption("general", Value, "username", translate("Username"))
++password = section:taboption("general", Value, "password", translate("Password"))
++password.password = true
++delay = section:taboption("general", Value, "delay", translate("Delay before start AT-commands"))
++mode = section:taboption("general", Value, "mode", translate("Network mode"))
++mode:value("", translate("No change"))
++mode:value("auto", "Automatic")
++mode:value("preferlte", "prefer LTE")
++mode:value("preferumts", "prefer UMTS")
++mode:value("lte", "LTE only")
++mode:value("umts", "UMTS only")
++mode:value("gsm", "GSM/EDGE only")
++
+diff --git a/protocols/luci-proto-ncm/luasrc/model/network/proto_ncm.lua b/protocols/luci-proto-ncm/luasrc/model/network/proto_ncm.lua
+new file mode 100644
+index 0000000..0a6c517
+--- /dev/null
++++ b/protocols/luci-proto-ncm/luasrc/model/network/proto_ncm.lua
+@@ -0,0 +1,16 @@
++-- Copyright 2016 Joerg Schueler-Maroldt <schueler.maroldt@gmail.com>
++-- Licensed to the public under the Apache License 2.0.
++
++local proto = luci.model.network:register_protocol("ncm")
++
++function proto.get_i18n(self)
++	return luci.i18n.translate("NCM Network")
++end
++
++function proto.is_installed(self)
++	return nixio.fs.access("/lib/netifd/proto/ncm.sh")
++end
++
++function proto.opkg_package(self)
++	return "comgt-ncm"
++end
+-- 
+2.9.3
+

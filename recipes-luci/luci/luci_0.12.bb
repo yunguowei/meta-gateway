@@ -7,7 +7,12 @@ PR = "r23"
 SRC_URI = "http://download.windriver.org/proprietary-downloads/luci-${PV}-${PR}.tar.gz \
 	file://version.lua \
 	file://etc/config/system \
-	file://no-auto-channel-for-wifi.patch"
+	file://no-auto-channel-for-wifi.patch \
+	file://0001-Luci-support-for-NCM-protocol-configuration-comgt-nc.patch \
+	file://0001-luci-proto-qmi-Added-support-for-QMI-Cellular.patch \
+	file://0001-luci-add-MBIM-proto-support.patch \
+	file://0001-luci-fix-the-building-issues.patch \
+      "
 
 SRC_URI[md5sum] = "09b542820ca206da550fd4b7cc4ae2ec"
 SRC_URI[sha256sum] = "20e48fa4cc87af7220d7202302fac45d5249b3e05fe0a1afe2d287b3ae344762"
@@ -50,7 +55,7 @@ PARALLEL_MAKE = ""
 LUCI_APPS = "luci-commands luci-firewall luci-hd-idle luci-mmc-over-gpio \
 	luci-multiwan luci-ntpc"
 LUCI_MODULES = "modules/admin-full modules/base libs/* themes/bootstrap i18n/english i18n/chinese \
-	protocols/3g protocols/ppp"
+	protocols/3g protocols/ppp protocols/luci-proto-mbim protocols/luci-proto-ncm protocols/luci-proto-qmi"
 
 # set LUCI_SUBDIRS = "applications/luci-ahcp ... modules/admin-full ..."
 python() {
