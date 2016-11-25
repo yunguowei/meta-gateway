@@ -12,6 +12,8 @@ SRC_URI = "http://download.windriver.org/proprietary-downloads/luci-${PV}-${PR}.
 	file://0001-luci-proto-qmi-Added-support-for-QMI-Cellular.patch \
 	file://0001-luci-add-MBIM-proto-support.patch \
 	file://0001-luci-fix-the-building-issues.patch \
+	file://0001-luci-add-dhcp-option-to-mbim-and-qmi.patch \
+	file://0002-luci-don-t-ignore-wwan-interface.patch \
       "
 
 SRC_URI[md5sum] = "09b542820ca206da550fd4b7cc4ae2ec"
