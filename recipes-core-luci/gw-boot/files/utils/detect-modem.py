@@ -141,8 +141,9 @@ def detect_3g_modem():
             lines = comgt_get(device, 'modem3g.gcom').split('\n')
             count += 1
         for line in lines:
-            config, option, value = line.split('|')
-            uci[config.strip()][option.strip()] = value.strip()
+            if len(line.strip()):
+                config, option, value = line.split('|')
+                uci[config.strip()][option.strip()] = value.strip()
         try:
             sim_pdp = comgt_get(device, 'getpdp.gcom')
             if re.match('\+CGDCONT:', sim_pdp):
@@ -163,6 +164,10 @@ def detect_3g_modem():
         uci['sim'] = {'IMSI': None, 'operator': None, 'present': 'No'}
 
     uci['wwan']['device'] = uci['modem']['pppddev']
+
+    proto = uci['modem'].get('protoall', None)
+    if proto is not None and not cmp(proto, 'mbim'):
+        uci['wwan']['proto'] = uci['modem']['protoall']
 
     for option in uci['modem'].keys():
         value = uci['modem'][option] if uci['modem'][option] is not None else ''
