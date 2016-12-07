@@ -5,6 +5,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += "\
             file://0001-dnsmasq-fixes-bug-that-causes-unsynchronized-resolve.patch \
             file://dnsmasq.init \
+            file://dnsmasq-systemd-wrapper \
             file://dhcp.config \
             file://dnsmasq.service \
             "
@@ -27,7 +28,8 @@ do_install () {
         mkdir -p ${D}${base_sbindir}
         ln -s ${bindir}/dnsmasq ${D}${base_sbindir}/dnsmasq
         mkdir -p ${D}${sbindir}
-        install -m 0755 ${WORKDIR}/dnsmasq.init ${D}/${sbindir}/dnsmasq-systemd-wrapper
+        install -m 0755 ${WORKDIR}/dnsmasq.init ${D}/${sbindir}/dnsmasq-systemd-uci
+        install -m 0755 ${WORKDIR}/dnsmasq-systemd-wrapper ${D}/${sbindir}/dnsmasq-systemd-wrapper
 
         install -d ${D}${systemd_unitdir}/system
         install -m 0644 ${WORKDIR}/dnsmasq.service ${D}${systemd_unitdir}/system

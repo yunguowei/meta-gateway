@@ -1,0 +1,18 @@
+#!/bin/sh
+
+action=$1
+
+# For cube-gw which use UCI system
+if [ -f /etc/rc.common -a -f /usr/sbin/dnsmasq-systemd-uci ]; then
+	/usr/sbin/dnsmasq-systemd-uci $action
+	exit
+fi
+
+case $action in
+	start)
+		/usr/bin/dnsmasq -x /run/dnsmasq.pid
+		;;
+	stop)
+		/bin/kill -HUP $(/bin/cat /run/dnsmasq.pid)
+		;;
+esac
