@@ -1,6 +1,8 @@
 #!/bin/sh
 
 mask="0"
+interface=''
+ifname=''
 
 [ -n "$INCLUDE_ONLY" ] || {
 	. /lib/functions.sh
@@ -32,6 +34,16 @@ cdr2mask ()
    mask=${1-0}.${2-0}.${3-0}.${4-0}
 }
 
+ERROR() {
+	if [ -z "$ifname" ]; then
+		ifname='none'
+	fi
+	uci -q set network.${interface}.ifname=$ifname
+	uci -q set network.${interface}.proto='none'
+	uci commit
+	proto_set_available "$interface" 0
+}
+
 _proto_mbim_setup() {
 	local interface="$1"
 	local tid=2
@@ -46,12 +58,14 @@ _proto_mbim_setup() {
 		echo "mbim[$$]" "No control device specified"
 		proto_notify_error "$interface" NO_DEVICE
 		proto_set_available "$interface" 0
+		ERROR
 		return 1
 	}
 	[ -c "$device" ] || {
 		echo "mbim[$$]" "The specified control device does not exist"
 		proto_notify_error "$interface" NO_DEVICE
 		proto_set_available "$interface" 0
+		ERROR
 		return 1
 	}
 
@@ -63,6 +77,7 @@ _proto_mbim_setup() {
 		echo "mbim[$$]" "Failed to find matching interface"
 		proto_notify_error "$interface" NO_IFNAME
 		proto_set_available "$interface" 0
+		ERROR
 		return 1
 	}
 
@@ -87,6 +102,7 @@ _proto_mbim_setup() {
 	umbim $DBG -d $device -n -t $tid caps || {
 		echo "mbim[$$]" "Failed to read modem caps"
 		proto_notify_error "$interface" PIN_FAILED
+		ERROR
 		return 1
 	}
 	tid=$((tid + 1))
@@ -95,6 +111,7 @@ _proto_mbim_setup() {
  	umbim $DBG -d $device -n -t $tid subscriber || {
 		echo "mbim[$$]" "Subscriber init failed"
 		proto_notify_error "$interface" NO_SUBSCRIBER
+		ERROR
 		return 1
 	}
 	tid=$((tid + 1))
@@ -103,6 +120,7 @@ _proto_mbim_setup() {
   	umbim $DBG -d $device -n -t $tid registration || {
 		echo "mbim[$$]" "Subscriber registration failed"
 		proto_notify_error "$interface" NO_REGISTRATION
+		ERROR
 		return 1
 	}
 	tid=$((tid + 1))
@@ -111,6 +129,7 @@ _proto_mbim_setup() {
    	umbim $DBG -d $device -n -t $tid attach || {
 		echo "mbim[$$]" "Failed to attach to network"
 		proto_notify_error "$interface" ATTACH_FAILED
+		ERROR
 		return 1
 	}
 	tid=$((tid + 1))
@@ -125,6 +144,7 @@ _proto_mbim_setup() {
 	echo "mbim[$$]" "Get IP config"
 	CONFIG=$(umbim $DBG -d $device -n -t $tid config) || {
 		echo "mbim[$$]" "config failed"
+		ERROR
 		return 1
 	}
 	
