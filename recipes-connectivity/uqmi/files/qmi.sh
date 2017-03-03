@@ -83,9 +83,14 @@ proto_qmi_setup() {
 		return 1
 	}
 
-	uqmi -s -d "$device" --set-data-format 802.3
-	uqmi -s -d "$device" --wda-set-data-format 802.3
-
+#	uqmi -s -d "$device" --set-data-format 802.3
+#	uqmi -s -d "$device" --wda-set-data-format 802.3
+	data_format=`uqmi -s -d "$device" --wda-get-data-format | sed 's/\"//g'`
+	if [ $data_format == "raw-ip" ]; then
+		ifconfig $ifname down
+		echo "Y" >/sys/class/net/$ifname/qmi/raw_ip
+		ifconfig $ifname up
+	fi
 	echo "Waiting for network registration"
 	while uqmi -s -d "$device" --get-serving-system | grep '"searching"' > /dev/null; do
 		sleep 5;
@@ -108,11 +113,12 @@ proto_qmi_setup() {
 		${username:+--username $username} \
 		${password:+--password $password} \
 		--ip-family ipv4`
-	[ $? -ne 0 ] && {
-		echo "Unable to connect IPv4"
-		uqmi -s -d "$device" --set-client-id wds,"$cid_4" --release-client-id wds
-		ipv4=""
-	}
+
+#	[ $? -ne 0 ] && {
+#		echo "Unable to connect IPv4"
+#		uqmi -s -d "$device" --set-client-id wds,"$cid_4" --release-client-id wds
+#		ipv4=""
+#	}
 
 	[ -n "$ipv6" ] && {
 		cid_6=`uqmi -s -d "$device" --get-client-id wds`
