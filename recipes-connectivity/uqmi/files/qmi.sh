@@ -83,8 +83,6 @@ proto_qmi_setup() {
 		ifconfig $ifname up
 	fi
 
-	qmi_disconnect
-
 	echo "Waiting for network registration"
 	while uqmi -s -d "$device" --get-serving-system | grep '"searching"' > /dev/null; do
 		sleep 5;
@@ -101,19 +99,18 @@ proto_qmi_setup() {
 		return 1
 	}
 
-	uqmi -s -d "$device" --set-client-id wds,"$cid" \
-		--start-network "$apn" \
-		${auth:+--auth-type $auth} \
-		${username:+--username $username} \
-		${password:+--password $password} \
-		--autoconnect > /dev/null
+	uci_set_state network $interface cid "$cid"
 
-	sleep 5
+	pdh=`uqmi -s -d "$device" --set-client-id wds,"$cid" --start-network "$apn" \
+	        ${auth:+--auth-type $auth} \
+	        ${username:+--username $username} \
+	        ${password:+--password $password} `
 
 	if ! uqmi -s -d "$device" --get-data-status | grep '"connected"' > /dev/null; then
 		echo "Connection lost"
 		proto_notify_error "$interface" NOT_CONNECTED
 	fi
+	uci_set_state network $interface pdh "$pdh"
 
 	echo "Connected, starting DHCP"
 	proto_init_update "$ifname" 1
@@ -140,8 +137,9 @@ proto_qmi_teardown() {
 	local device
 	json_get_vars device
 	local cid=$(uci_get_state network $interface cid)
+	local pdh=$(uci_get_state network $interface pdh)
 
-	echo "Stopping network"
+	echo "Stopping network cid=$cid"
 	qmi_disconnect
 	[ -n "$cid" ] && {
 		uqmi -s -d "$device" --set-client-id wds,"$cid" --release-client-id wds
