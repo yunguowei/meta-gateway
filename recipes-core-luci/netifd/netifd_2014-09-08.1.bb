@@ -6,6 +6,14 @@ SECTION = "console/utils"
 DEPENDS = "uci libnl json-c libubox ubus"
 RDEPENDS_${PN} += "libnl dhcp-client comgt ppp hostapd"
 
+inherit update-alternatives
+
+ALTERNATIVE_PRIORITY = "150"
+ALTERNATIVE_${PN} = "ifup ifdown"
+
+ALTERNATIVE_LINK_NAME[ifup] = "${base_sbindir}/ifup"
+ALTERNATIVE_LINK_NAME[ifdown] = "${base_sbindir}/ifdown"
+
 PR = "r2"
 
 SRC_URI = "git://git.openwrt.org/project/netifd.git;protocol=git \
