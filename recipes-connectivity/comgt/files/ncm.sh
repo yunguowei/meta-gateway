@@ -66,6 +66,7 @@ proto_ncm_setup() {
 	'tty'*)
 		devpath="$(readlink -f /sys/class/tty/$devname/device)"
 		ifname="$( ls "$devpath"/../../*/net )"
+		[ -z "$ifname" ] && ifname="$( ls "$devpath"/../../*/*/net )"
 		;;
 	*)
 		devpath="$(readlink -f /sys/class/usbmisc/$devname/device/)"
@@ -90,6 +91,8 @@ proto_ncm_setup() {
 		proto_notify_error "$interface" GETINFO_FAILED
 		return 1
 	}
+
+	[ -z "$manufacturer" ] && manufacturer=$(uci -q get network.modem_cell.Manufacturer)
 
 	json_load "$(cat /etc/gcom/ncm.json)"
 	json_select "$manufacturer"
@@ -173,6 +176,7 @@ proto_ncm_teardown() {
 		return 1
 	}
 
+	[ -z "$manufacturer" ] && manufacturer=$(uci -q get network.modem_cell.Manufacturer)
 	json_load "$(cat /etc/gcom/ncm.json)"
 	json_select "$manufacturer" || {
 		echo "Unsupported modem"
