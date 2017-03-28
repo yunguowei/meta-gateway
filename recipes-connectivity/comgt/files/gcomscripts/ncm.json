@@ -63,5 +63,21 @@
 		},
 		"connect": "AT*ENAP=1,1",
 		"disconnect": "AT*ENAP=0"
+	},
+	"u-blox": {
+		"initialize": [
+			"AT+CFUN=4",
+			"AT+URAT=4,3",
+			"AT+UCGDFLT=1,\\\"IP\\\",\\\"${apn}\\\""
+		],
+		"modes": {
+			"preferlte": "AT+URAT=4,3",
+			"preferumts": "AT+URAT=1,2",
+			"lte": "AT+URAT=3",
+			"umts": "AT+URAT=2,2",
+			"gsm": "AT+URAT=0,0"
+		},
+		"connect": "AT+CFUN=1",
+		"disconnect": "AT+CFUN=4"
 	}
 }
