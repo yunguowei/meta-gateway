@@ -9,6 +9,6 @@ scan_hardwares() {
 
 start() {
 	scan_hardwares
-
+	ifup wwan
 	return 0
 }
