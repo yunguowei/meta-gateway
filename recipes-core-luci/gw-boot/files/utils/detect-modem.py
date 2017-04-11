@@ -166,7 +166,7 @@ def detect_3g_modem():
     uci['wwan']['device'] = uci['modem']['pppddev']
 
     proto = uci['modem'].get('protoall', None)
-    if proto is not None and not cmp(proto, 'mbim'):
+    if proto is not None:
         uci['wwan']['proto'] = uci['modem']['protoall']
 
     for option in uci['modem'].keys():
