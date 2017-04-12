@@ -88,7 +88,7 @@ proto_qmi_setup() {
 		sleep 5;
 	done
 
-	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
+#	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
 
 	echo "Starting network $apn"
 	cid=`uqmi -s -d "$device" --get-client-id wds`
