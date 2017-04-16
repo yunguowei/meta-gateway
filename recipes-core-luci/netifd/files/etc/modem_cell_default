@@ -9,3 +9,4 @@ Huawei|ME909s|12d1|15c1|ncm|ttyUSB0|ttyUSB2
 u-blox|TOBY-L210|1546|1146|ncm|ttyACM0|ttyACM0
 Advantech|U-Blox AG|1546|1102|3g|ttyACM1|ttyACM0
 Sierra|MC7455|1199|9071|qmi|cdc-wdm0|cdc-wdm0
+Sierra|MC7354|1199|68c0|qmi|cdc-wdm0|cdc-wdm0
