@@ -149,6 +149,8 @@ def detect_3g_modem():
             if re.match('\+CGDCONT:', sim_pdp):
                 pdp_apn = sim_pdp.split(',')[2].replace('"', '')
                 log('PDP APN: %s' % pdp_apn)
+            else:
+                pdp_apn = ''	 
         except Exception, e:
             log('Fail to get APN from SIM card PDP')
             pdp_apn = ''
