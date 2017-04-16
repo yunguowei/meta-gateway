@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://main.c;beginline=1;endline=20;md5=3f7041e5710007661d7
 SECTION = "base"
 DEPENDS = "libubox json-c"
 
-SRCREV = "c61815319c1c0e76898048a19151f30844a6989c"
+SRCREV = "8ceeab690d8c6f1e3afbd4bcaee7bc2ba3fbe165"
 SRC_URI = "git://git.openwrt.org/project/uqmi.git \
 	   file://qmi.sh \
           "
