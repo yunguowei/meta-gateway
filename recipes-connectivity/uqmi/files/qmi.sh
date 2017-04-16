@@ -54,6 +54,9 @@ proto_qmi_setup() {
 		return 1
 	}
 
+	uci -q set network.${interface}.ifname=$ifname
+	uci commit
+
 	[ -n "$delay" ] && sleep "$delay"
 
 	while uqmi -s -d "$device" --get-pin-status | grep '"UIM uninitialized"' > /dev/null; do
