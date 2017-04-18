@@ -145,19 +145,25 @@ proto_qmi_setup() {
 			--stop-network 0xffffffff \
 			--autoconnect > /dev/null
 
-		pdh_4=`uqmi -s -d "$device" --set-client-id wds,"$cid_4" \
-			--start-network \
-			${apn:+--apn $apn} \
-			${profile:+--profile $profile} \
-			${auth:+--auth-type $auth} \
-			${username:+--username $username} \
-			${password:+--password $password} \
-			${autoconnect:+--autoconnect}`
-		[ $? -ne 0 ] && {
+		USE_PREVIOUS_CID="--client-cid=$cid_4"
+		START_NETWORK_OUT=`qmicli -d $device --wds-start-network=${apn} $USE_PREVIOUS_CID --client-no-release-cid`
+		cid_4=`echo "$START_NETWORK_OUT" | sed -n "s/.*CID.*'\(.*\)'.*/\1/p"`
+		pdh_4=`echo "$START_NETWORK_OUT" | sed -n "s/.*handle.*'\(.*\)'.*/\1/p"`
+
+
+		if [ "x$cid_4" = "x" ]; then
 			echo "Unable to connect IPv4"
-			uqmi -s -d "$device" --set-client-id wds,"$cid_4" --release-client-id wds
 			proto_notify_error "$interface" CALL_FAILED
-		}
+			exit 1
+		fi
+		
+		if [ "x$pdh_4" = "x" ]; then
+			echo "Unable to connect IPv4"
+			proto_notify_error "$interface" CALL_FAILED
+			# Cleanup the client
+			qmicli -d "$device" --wds-noop --client-cid="$cid_4"
+			exit 1
+		fi
 	}
 
 	[ "$pdptype" = "ipv6" -o "$pdptype" = "ipv4v6" ] && {
