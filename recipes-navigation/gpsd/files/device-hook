@@ -1,0 +1,39 @@
+#!/bin/sh
+# $Id: device-hook,v 1.2 2016/07/09 19:26:07 bjorn Exp $
+#
+# gpsd will not poll a device before it is opened, at which time this script is called
+# This means that we can unconditionally add the GPS without wasting any power,  It
+# will be activated when the first client connects to gpsd, and this script is called
+#
+# gpsd will also deactivate the port after some inactivity period
+
+# figure out the parent usb device
+USBDEV=`ls -l "$1" |sed -ne 's!^c......... [0-9]* [^ ]* [^ ]* \([0-9]*\), \([0-9]*\) .*!/sys/dev/char/\1:\2/device/../..!p'`
+
+# silently ignore any non-USB ports
+if [ ! -r "$USBDEV/idVendor" ] || [ ! -r "$USBDEV/idProduct" ]; then
+  exit 0
+fi 
+
+VID=`cat "$USBDEV/idVendor"`
+PID=`cat "$USBDEV/idProduct"`
+
+case "$2" in
+  ACTIVATE)
+    CMD=START
+    ;;
+  *)
+    CMD=STOP
+    ;;
+esac
+
+case "$VID:$PID" in
+  "1199:9071" |\
+  "1199:68c0" )
+    echo \$GPS_$CMD >"$1"
+    ;;
+  *)
+    ;;
+esac
+
+exit 0
