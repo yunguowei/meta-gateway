@@ -85,3 +85,4 @@ do_install() {
 	rm -rf ${D}/lib/upgrade
 }
 
+CONFFILES_${PN} += "${sysconfdir}/config/system"
