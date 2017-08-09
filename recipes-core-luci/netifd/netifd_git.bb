@@ -21,11 +21,8 @@ SRC_URI = "git://git.openwrt.org/project/netifd.git;protocol=git \
             file://sbin/ifdown \
             file://sbin/ifstatus \
             file://sbin/ifup \
-            file://0001-netifd-Fix-proto-shell-setup-teardwon-race-condition.patch \
-            file://0002-Make-netifd-to-clean-resolv.conf.auto-when-link-down.patch \
-            file://0003-replace-calls-to-deprecated-json_object_object_get.patch \
-            file://0004-update-json-c-include-location.patch \
-            file://0005-musl_af_inet_include.patch \
+            file://0001-Make-netifd-to-clean-resolv.conf.auto-when-link-down.patch \
+            file://0002-system-linux-Fix-IFF_LOWER_UP-define.patch \
             file://etc \
             file://lib \
             file://netifd.service \
@@ -33,7 +30,7 @@ SRC_URI = "git://git.openwrt.org/project/netifd.git;protocol=git \
             file://hostapd.sh \
             file://wpa_supplicant.sh \
            "
-SRCREV = "46c569989f984226916fec28dd8ef152a664043e"
+SRCREV = "34afb764077768a361d76256fb05cbba172de223"
 LIC_FILES_CHKSUM = "file://config.c;beginline=1;endline=13;md5=572cd47ba0e377b26331e67e9f3bc4b3"
 
 S = "${WORKDIR}/git"

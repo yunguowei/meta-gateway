@@ -1,7 +1,7 @@
-From 7bf26c8d63389deaff7a9b9dc6c4a0f5408d3c51 Mon Sep 17 00:00:00 2001
+From cdba0baafbf484b4dcccb5fcc0238d7647e48807 Mon Sep 17 00:00:00 2001
 From: Haiqing Bai <Haiqing.Bai@windriver.com>
 Date: Wed, 13 Jan 2016 13:38:38 +0800
-Subject: [PATCH] Make netifd to clean resolv.conf.auto when link down.
+Subject: [PATCH 1/2] Make netifd to clean resolv.conf.auto when link down.
 
 Issue: IDP3-866
 
@@ -15,11 +15,11 @@ Signed-off-by: Haiqing Bai <Haiqing.Bai@windriver.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/interface.c b/interface.c
-index 35f20b0..dd1be3a 100644
+index 900a523..cb80b41 100644
 --- a/interface.c
 +++ b/interface.c
-@@ -273,7 +273,8 @@ interface_check_state(struct interface *iface)
- 	case IFS_UP:
+@@ -328,7 +328,8 @@ interface_check_state(struct interface *iface)
+ 	case IFS_SETUP:
  		if (!iface->enabled || !link_state) {
  			interface_proto_event(iface->proto, PROTO_CMD_TEARDOWN, false);
 -			mark_interface_down(iface);
@@ -28,6 +28,6 @@ index 35f20b0..dd1be3a 100644
  		}
  		break;
  	case IFS_DOWN:
---
-1.9.1
+-- 
+2.11.0
 
