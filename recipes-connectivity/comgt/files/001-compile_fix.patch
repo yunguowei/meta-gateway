@@ -4,7 +4,7 @@
  SCRIPTSRC = ./scripts/
  BIN     = $(CPROG) 
  MANP	= comgt.1 sigmon.1
-+CC	= cc
++CC	?= cc
  
  CFLAGS  = -c
  LDFLAGS =
