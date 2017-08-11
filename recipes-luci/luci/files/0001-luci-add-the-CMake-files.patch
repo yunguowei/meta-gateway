@@ -1,0 +1,377 @@
+From 2e1f81a7c6fa2a7c3a15e785bc5a30f28c18f0ff Mon Sep 17 00:00:00 2001
+From: fli <fupan.li@windriver.com>
+Date: Thu, 10 Aug 2017 19:21:04 -0700
+Subject: [PATCH] luci: add the CMake files
+
+Signed-off-by: fli <fupan.li@windriver.com>
+---
+ CMakeLists.txt                                     | 39 ++++++++++++++++++++++
+ applications/luci-app-commands/CMakeLists.txt      |  8 +++++
+ applications/luci-app-firewall/CMakeLists.txt      |  8 +++++
+ applications/luci-app-hd-idle/CMakeLists.txt       | 14 ++++++++
+ applications/luci-app-mmc-over-gpio/CMakeLists.txt | 13 ++++++++
+ applications/luci-app-multiwan/CMakeLists.txt      |  8 +++++
+ applications/luci-app-ntpc/CMakeLists.txt          |  8 +++++
+ libs/luci-lib-ip/CMakeLists.txt                    | 15 +++++++++
+ libs/luci-lib-nixio/CMakeLists.txt                 | 26 +++++++++++++++
+ modules/luci-base/CMakeLists.txt                   | 26 +++++++++++++++
+ modules/luci-mod-admin-full/CMakeLists.txt         | 21 ++++++++++++
+ protocols/luci-proto-3g/CMakeLists.txt             |  8 +++++
+ protocols/luci-proto-ncm/CMakeLists.txt            |  8 +++++
+ protocols/luci-proto-ppp/CMakeLists.txt            |  8 +++++
+ protocols/luci-proto-qmi/CMakeLists.txt            |  8 +++++
+ themes/luci-theme-bootstrap/CMakeLists.txt         | 19 +++++++++++
+ 16 files changed, 237 insertions(+)
+ create mode 100644 CMakeLists.txt
+ create mode 100644 applications/luci-app-commands/CMakeLists.txt
+ create mode 100644 applications/luci-app-firewall/CMakeLists.txt
+ create mode 100644 applications/luci-app-hd-idle/CMakeLists.txt
+ create mode 100644 applications/luci-app-mmc-over-gpio/CMakeLists.txt
+ create mode 100644 applications/luci-app-multiwan/CMakeLists.txt
+ create mode 100644 applications/luci-app-ntpc/CMakeLists.txt
+ create mode 100644 libs/luci-lib-ip/CMakeLists.txt
+ create mode 100644 libs/luci-lib-nixio/CMakeLists.txt
+ create mode 100644 modules/luci-base/CMakeLists.txt
+ create mode 100644 modules/luci-mod-admin-full/CMakeLists.txt
+ create mode 100644 protocols/luci-proto-3g/CMakeLists.txt
+ create mode 100644 protocols/luci-proto-ncm/CMakeLists.txt
+ create mode 100644 protocols/luci-proto-ppp/CMakeLists.txt
+ create mode 100644 protocols/luci-proto-qmi/CMakeLists.txt
+ create mode 100644 themes/luci-theme-bootstrap/CMakeLists.txt
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 000000000..f57ac2ff1
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,39 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci)
++
++INCLUDE(GNUInstallDirs)
++
++IF(NOT LUAPATH)
++	SET(LUAPATH "${CMAKE_INSTALL_LIBDIR}/lua/5.1")
++ENDIF()
++
++IF(NOT LUA_CFLAGS)
++	FIND_PROGRAM(PKG_CONFIG pkg-config)
++	IF(PKG_CONFIG)
++		EXECUTE_PROCESS(
++			COMMAND pkg-config --silence-errors --cflags lua5.1
++			OUTPUT_VARIABLE LUA_CFLAGS
++			OUTPUT_STRIP_TRAILING_WHITESPACE
++		)
++	ENDIF()
++ENDIF()
++
++ADD_DEFINITIONS(${LUA_CFLAGS})
++
++ADD_SUBDIRECTORY(modules/luci-base)
++ADD_SUBDIRECTORY(modules/luci-mod-admin-full)
++ADD_SUBDIRECTORY(libs/luci-lib-nixio)
++ADD_SUBDIRECTORY(libs/luci-lib-ip)
++ADD_SUBDIRECTORY(themes/luci-theme-bootstrap)
++ADD_SUBDIRECTORY(applications/luci-app-commands)
++ADD_SUBDIRECTORY(applications/luci-app-firewall)
++ADD_SUBDIRECTORY(applications/luci-app-hd-idle)
++ADD_SUBDIRECTORY(applications/luci-app-mmc-over-gpio)
++ADD_SUBDIRECTORY(applications/luci-app-multiwan)
++ADD_SUBDIRECTORY(applications/luci-app-ntpc)
++ADD_SUBDIRECTORY(protocols/luci-proto-3g)
++ADD_SUBDIRECTORY(protocols/luci-proto-ncm)
++ADD_SUBDIRECTORY(protocols/luci-proto-ppp)
++ADD_SUBDIRECTORY(protocols/luci-proto-qmi)
++
+diff --git a/applications/luci-app-commands/CMakeLists.txt b/applications/luci-app-commands/CMakeLists.txt
+new file mode 100644
+index 000000000..f1bcd4f42
+--- /dev/null
++++ b/applications/luci-app-commands/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-commands C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/applications/luci-app-firewall/CMakeLists.txt b/applications/luci-app-firewall/CMakeLists.txt
+new file mode 100644
+index 000000000..596289240
+--- /dev/null
++++ b/applications/luci-app-firewall/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-firewall C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/applications/luci-app-hd-idle/CMakeLists.txt b/applications/luci-app-hd-idle/CMakeLists.txt
+new file mode 100644
+index 000000000..7de8bc273
+--- /dev/null
++++ b/applications/luci-app-hd-idle/CMakeLists.txt
+@@ -0,0 +1,14 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-hd-idle C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(DIRECTORY root/
++        DESTINATION "${CMAKE_INSTALL_PREFIX}/"
++        USE_SOURCE_PERMISSIONS
++)
++
+diff --git a/applications/luci-app-mmc-over-gpio/CMakeLists.txt b/applications/luci-app-mmc-over-gpio/CMakeLists.txt
+new file mode 100644
+index 000000000..1d9b4845c
+--- /dev/null
++++ b/applications/luci-app-mmc-over-gpio/CMakeLists.txt
+@@ -0,0 +1,13 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-mmc-over-gpio C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(DIRECTORY root/
++        DESTINATION "${CMAKE_INSTALL_PREFIX}/"
++        USE_SOURCE_PERMISSIONS
++)
+diff --git a/applications/luci-app-multiwan/CMakeLists.txt b/applications/luci-app-multiwan/CMakeLists.txt
+new file mode 100644
+index 000000000..159e31549
+--- /dev/null
++++ b/applications/luci-app-multiwan/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-multiwan C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/applications/luci-app-ntpc/CMakeLists.txt b/applications/luci-app-ntpc/CMakeLists.txt
+new file mode 100644
+index 000000000..952666d6a
+--- /dev/null
++++ b/applications/luci-app-ntpc/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-app-ntpc C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/libs/luci-lib-ip/CMakeLists.txt b/libs/luci-lib-ip/CMakeLists.txt
+new file mode 100644
+index 000000000..56ba5bd98
+--- /dev/null
++++ b/libs/luci-lib-ip/CMakeLists.txt
+@@ -0,0 +1,15 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-lib-ip C)
++
++FIND_PACKAGE(PkgConfig)
++
++ADD_LIBRARY(ip SHARED src/ip.c)
++SET_TARGET_PROPERTIES(ip PROPERTIES PREFIX "")
++
++TARGET_LINK_LIBRARIES(ip nl-3)
++
++INSTALL(TARGETS ip
++	LIBRARY DESTINATION "${LUAPATH}/luci"
++)
++
+diff --git a/libs/luci-lib-nixio/CMakeLists.txt b/libs/luci-lib-nixio/CMakeLists.txt
+new file mode 100644
+index 000000000..da9b3e42c
+--- /dev/null
++++ b/libs/luci-lib-nixio/CMakeLists.txt
+@@ -0,0 +1,26 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-lib-nixio C)
++
++ADD_DEFINITIONS(-DNO_TLS)
++
++ADD_LIBRARY(nixio SHARED src/nixio.c src/socket.c src/sockopt.c src/bind.c src/address.c
++	src/protoent.c src/poll.c src/io.c src/file.c src/splice.c src/process.c
++	src/syslog.c src/bit.c src/binary.c src/fs.c src/user.c)
++SET_TARGET_PROPERTIES(nixio PROPERTIES PREFIX "")
++TARGET_LINK_LIBRARIES(nixio crypt ssl)
++
++INSTALL(DIRECTORY root/usr/lib/lua/
++	DESTINATION ${LUAPATH}
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(TARGETS nixio
++	LIBRARY DESTINATION ${LUAPATH}
++)
++
++INSTALL(DIRECTORY root/lib
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/"
++	USE_SOURCE_PERMISSIONS
++)
++
+diff --git a/modules/luci-base/CMakeLists.txt b/modules/luci-base/CMakeLists.txt
+new file mode 100644
+index 000000000..d5feb61cd
+--- /dev/null
++++ b/modules/luci-base/CMakeLists.txt
+@@ -0,0 +1,26 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-base C)
++
++ADD_LIBRARY(parser SHARED src/template_parser.c src/template_utils.c src/template_lmo.c src/template_lualib.c)
++SET_TARGET_PROPERTIES(parser PROPERTIES PREFIX "")
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(TARGETS parser
++	LIBRARY DESTINATION "${LUAPATH}/luci/template"
++)
++
++INSTALL(DIRECTORY root/
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(DIRECTORY htdocs/
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/www"
++	USE_SOURCE_PERMISSIONS
++)
++
+diff --git a/modules/luci-mod-admin-full/CMakeLists.txt b/modules/luci-mod-admin-full/CMakeLists.txt
+new file mode 100644
+index 000000000..f843031f9
+--- /dev/null
++++ b/modules/luci-mod-admin-full/CMakeLists.txt
+@@ -0,0 +1,21 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-mod-admin-full C)
++
++ADD_EXECUTABLE(luci-bwc src/luci-bwc.c)
++TARGET_LINK_LIBRARIES(luci-bwc dl)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(TARGETS luci-bwc
++	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++)
++
++INSTALL(DIRECTORY htdocs/
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/www"
++	USE_SOURCE_PERMISSIONS
++)
++
+diff --git a/protocols/luci-proto-3g/CMakeLists.txt b/protocols/luci-proto-3g/CMakeLists.txt
+new file mode 100644
+index 000000000..3b48a8f6b
+--- /dev/null
++++ b/protocols/luci-proto-3g/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-proto-3g C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/protocols/luci-proto-ncm/CMakeLists.txt b/protocols/luci-proto-ncm/CMakeLists.txt
+new file mode 100644
+index 000000000..803c2d590
+--- /dev/null
++++ b/protocols/luci-proto-ncm/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-proto-ncm C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/protocols/luci-proto-ppp/CMakeLists.txt b/protocols/luci-proto-ppp/CMakeLists.txt
+new file mode 100644
+index 000000000..a1c1148af
+--- /dev/null
++++ b/protocols/luci-proto-ppp/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-proto-ppp C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/protocols/luci-proto-qmi/CMakeLists.txt b/protocols/luci-proto-qmi/CMakeLists.txt
+new file mode 100644
+index 000000000..4ec653927
+--- /dev/null
++++ b/protocols/luci-proto-qmi/CMakeLists.txt
+@@ -0,0 +1,8 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-proto-qmi C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
+diff --git a/themes/luci-theme-bootstrap/CMakeLists.txt b/themes/luci-theme-bootstrap/CMakeLists.txt
+new file mode 100644
+index 000000000..7a91aa761
+--- /dev/null
++++ b/themes/luci-theme-bootstrap/CMakeLists.txt
+@@ -0,0 +1,19 @@
++cmake_minimum_required(VERSION 3.0)
++
++PROJECT(luci-theme-bootstrap C)
++
++INSTALL(DIRECTORY luasrc/
++	DESTINATION "${LUAPATH}/luci"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(DIRECTORY root/
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/"
++	USE_SOURCE_PERMISSIONS
++)
++
++INSTALL(DIRECTORY htdocs/
++	DESTINATION "${CMAKE_INSTALL_PREFIX}/www"
++	USE_SOURCE_PERMISSIONS
++)
++
+-- 
+2.11.0
+
