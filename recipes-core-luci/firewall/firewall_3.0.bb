@@ -4,11 +4,7 @@ DEPENDS = "libubox ubus uci iptables"
 
 PR = "r0"
 
-SRC_URI = "git://nbd.name/firewall3.git;protocol=git \
-	   file://0001-Do-not-load-iptables-dynamic-libraries-iptext.patch \
-	   file://0002-Revise-iptables-dynamic-shared-library-path.patch \
-	   file://0003-Add-icmp-library-backwards-compatibility.patch \
-	   file://0004-weaken-dependency-on-ubus.patch \
+SRC_URI = "git://git.openwrt.org/project/firewall3.git \
 	   file://firewall.config \
 	   file://firewall.hotplug \
 	   file://firewall.user \
@@ -17,7 +13,7 @@ SRC_URI = "git://nbd.name/firewall3.git;protocol=git \
 	   file://firewall-kmod.conf \
 "
 
-SRCREV = "980b7859bbd1db1e5e46422fccccbce38f9809ab"
+SRCREV = "a4d98aea373e04f3fdc3c492c1688ba52ce490a9"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d690"
 
 S = "${WORKDIR}/git"
@@ -26,7 +22,8 @@ inherit cmake systemd
 
 SYSTEMD_SERVICE_${PN} = "firewall.service"
 
-EXTRA_OECMAKE="-DCMAKE_SKIP_RPATH:BOOL=YES -DBUILD_LUA=OFF -DLIBNL_LIBS=-lnl-tiny -DDEBUG=1"
+EXTRA_OECMAKE = "${@bb.utils.contains('DISTRO_FEATURES', 'ipv6', '-DDISABLE_IPV6=OFF', '-DDISABLE_IPV6=ON', d)}"
+EXTRA_OECMAKE += "-DCMAKE_SKIP_RPATH:BOOL=YES -DBUILD_LUA=OFF -DLIBNL_LIBS=-lnl-tiny -DDEBUG=1"
 OECMAKE_C_FLAGS += "-I ${STAGING_INCDIR}/libubus -I ${STAGING_INCDIR} -I ${S}"
 
 do_install() {
