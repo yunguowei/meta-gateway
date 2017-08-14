@@ -16,12 +16,12 @@ LIC_FILES_CHKSUM = "file://cli.c;beginline=3;endline=12;md5=61ac10aebfcddf1cf737
                     file://ucimap.c;beginline=3;endline=12;md5=125da5ab3833a1b42e517efefa61d75a"
 
 SRC_URI += "git://nbd.name/uci.git;protocol=git \
-            file://0001-fix-bug-that-leaves-a-null-pointer-gap.patch \
+	    file://0001-uci-fix-the-issue-of-wrong-intalling-path.patch \
             file://uci.sh"
 
 S = "${WORKDIR}/git"
 
-SRCREV = "e339407372ffc70b1451e4eda218c01aa95a6a7f"
+SRCREV = "a536e300370cc3ad7b14b052b9ee943e6149ba4d"
 
 
 PR = "r2"
@@ -33,29 +33,19 @@ EXTRA_OECMAKE="-DCMAKE_SKIP_RPATH:BOOL=YES \
                -DBUILD_LUA=ON -DLUAPATH=${libdir}/lua/5.1/"
 
 B = "${S}"
-do_install() {
-    install -d -m 0755 ${D}/${base_sbindir}
-    install -d -m 0755 ${D}/${base_libdir}
-    install -d -m 0755 ${D}/${libdir}
-    install -d -m 0755 ${D}/${libdir}/lua/5.1
-    install -d -m 0755 ${D}/${includedir}
-    install -d -m 0755 ${D}/lib/config
-    install -d -m 0755 ${D}/${sysconfdir}/uci-defaults
+do_install_append() {
+    install -Dm 0755 ${WORKDIR}/uci.sh ${D}/lib/config/uci.sh
 
-    install -m 0755 ${B}/uci ${D}/${base_sbindir}
-    install -m 0755 ${B}/libuci.so ${D}/${base_libdir}
-    install -m 0755 ${B}/libucimap.a ${D}/${libdir}
-    install -m 0755 ${B}/lua/uci.so ${D}/${libdir}/lua/5.1
-
-    install -m 0644 ${S}/uci*.h ${D}/${includedir}
-
-    install -m 0755 ${WORKDIR}/uci.sh ${D}/lib/config
+    mkdir -p ${D}/sbin
+    mkdir -p ${D}/usr/sbin
+    ln -s /usr/bin/uci ${D}/usr/sbin/uci
+    ln -s /usr/bin/uci ${D}/sbin/uci
 }
 
 PACKAGES += "${PN}-lua"
 
-FILES_${PN}="${base_sbindir}/uci \
-	${base_libdir}/libuci.so \
+FILES_${PN} += "${base_sbindir}/uci \
+	${libdir}/libuci.so \
 	${sysconfdir}/ucisa/* \
 	${sysconfdir}/uci-defaults \
 	/lib/config/*"

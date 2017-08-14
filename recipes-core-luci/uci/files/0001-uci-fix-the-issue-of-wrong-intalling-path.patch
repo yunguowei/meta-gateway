@@ -1,0 +1,29 @@
+From 832603f045e3619a8b5c84ac53bc72d0369c2f28 Mon Sep 17 00:00:00 2001
+From: fli <fupan.li@windriver.com>
+Date: Sun, 13 Aug 2017 19:50:22 -0700
+Subject: [PATCH] uci: fix the issue of wrong intalling path
+
+Signed-off-by: fli <fupan.li@windriver.com>
+---
+ CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f9decc6..db2384c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -32,8 +32,8 @@ INSTALL(FILES uci.h uci_config.h uci_blob.h ucimap.h
+ )
+ 
+ INSTALL(TARGETS uci cli
+-	ARCHIVE DESTINATION lib
+-	LIBRARY DESTINATION lib
+-	RUNTIME DESTINATION bin
++	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
++	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+-- 
+2.11.0
+
