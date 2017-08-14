@@ -1,0 +1,32 @@
+From ede110677e00abf9b5cc20ca98bb9d02a8a0cc2d Mon Sep 17 00:00:00 2001
+From: fli <fupan.li@windriver.com>
+Date: Sun, 13 Aug 2017 19:31:54 -0700
+Subject: [PATCH] ubus: fix the installing path issue
+
+Signed-off-by: fli <fupan.li@windriver.com>
+---
+ CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9447167..cff3836 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -41,11 +41,11 @@ ADD_SUBDIRECTORY(lua)
+ ADD_SUBDIRECTORY(examples)
+ 
+ INSTALL(TARGETS ubus cli
+-	LIBRARY DESTINATION lib
+-	RUNTIME DESTINATION bin
++	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ INSTALL(TARGETS ubusd
+-	RUNTIME DESTINATION sbin
++	RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR}
+ )
+ 
+ INSTALL(FILES ubusmsg.h ubus_common.h libubus.h DESTINATION include)
+-- 
+2.11.0
+

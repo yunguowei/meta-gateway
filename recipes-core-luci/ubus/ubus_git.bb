@@ -6,14 +6,16 @@ it contains a RPC DAEMON 'ubusd' and a command line utility tool \
 LICENSE = "LGPLv2.1"
 SECTION = "console/utils"
 
-DEPENDS = "libubox lua"
+DEPENDS = "libubox lua json-c"
 
 PR = "r0"
 SRC_URI = "git://git.openwrt.org/project/ubus.git \
+	   file://0001-add-libubus-version-number-for-qa-issue.patch \
+	   file://0001-ubus-fix-the-installing-path-issue.patch \
            file://ubus.service \
-           file://0001-add-libubus-version-number-for-qa-issue.patch"
+	  "
 
-SRCREV = "fcf5d8af65f41d6a106ad08d1df5de9729f5399a"
+SRCREV = "763b9b2cf293fb60b5c2ddf34e2500f95200b6b5"
 
 S = "${WORKDIR}/git"
 LIC_FILES_CHKSUM = "file://cli.c;beginline=1;endline=12;md5=8bfdfc5dd171023c4eb2bf8c954bda77"
@@ -28,23 +30,9 @@ PACKAGES += "${PN}-lua"
 FILES_${PN}-lua = "${libdir}/lua/5.1/ubus.so"
 FILES_${PN}-dbg += "${libdir}/lua/5.1/.debug/*"
 
-do_install() {
-	install -d ${D}/${base_bindir}
-	install -d ${D}/${base_sbindir}
-	install -d ${D}/${base_libdir}
-	install -d ${D}/${libdir}/lua/5.1/
-	install -d ${D}/${includedir}/libubus
-	install -m 0755 ${B}/libubus.so.0.0.0 ${D}/${base_libdir}
-	install -m 0755 ${B}/ubus ${D}/${base_bindir}
-	install -m 0755 ${B}/ubusd ${D}/${base_sbindir}
-
-	install -d ${D}/${libdir}
-	rel_lib_prefix=`echo ${libdir} | sed 's,\(^/\|\)[^/][^/]*,..,g'`
-	ln -sf libubus.so.0.0.0 ${D}/${base_libdir}/libubus.so.0
-	ln -sf ${rel_lib_prefix}${base_libdir}/libubus.so.0 ${D}${libdir}/libubus.so
-
-	install -m 0755 ${S}/*.h ${D}/${includedir}/libubus/
-	install -m 0755 ${B}/lua/ubus.so  ${D}/${libdir}/lua/5.1/
+do_install_append() {
+	install -dm 0755 ${D}/sbin
+	ln -s /usr/sbin/ubusd ${D}/sbin/ubusd
 
 	install -d ${D}${systemd_unitdir}/system
 	install -m 0644 ${WORKDIR}/ubus.service ${D}${systemd_unitdir}/system
