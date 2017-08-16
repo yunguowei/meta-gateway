@@ -1,7 +1,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://device-hook \
-	    file://0001-libgpsd-core-Fix-issue-with-ACTIVATE-hook-not-being-.patch \
 	  "
 
 do_install_append() {
