@@ -14,11 +14,12 @@ SRC_URI = "git://git.openwrt.org/project/iwinfo.git \
 	   file://0004-Extend-the-array-size-of-key-mgmt.patch \
 	   file://0005-do-not-wait-for-scan-results.patch \
 	   file://0006-filter-no-IR-and-radar-detection-channel.patch \
-	   file://0007-fixed-scan-issue-when-connect-to-an-non-exist-AP.patch"
+	   file://0007-fixed-scan-issue-when-connect-to-an-non-exist-AP.patch \
+	   file://0001-fix-typo-in-spcifying-typename-luaL_Reg.patch"
 
 S = "${WORKDIR}/git"
 
-SRCREV = "e4aca3910dff532ed878d0ceaf1ab6e8ad7719bf"
+SRCREV = "813f61e48b9b1a76cb55f3b4a229bf98d3cd53a9"
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
