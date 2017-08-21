@@ -1,0 +1,26 @@
+From 6b56b90f8b2594fccde58faf4f23b28d747ebc6c Mon Sep 17 00:00:00 2001
+From: Fupan Li <fupan.li@windriver.com>
+Date: Mon, 21 Aug 2017 03:16:31 +0000
+Subject: [PATCH] luci:fix the building error
+
+Signed-off-by: Fupan Li <fupan.li@windriver.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 70a7e92..878d872 100644
+--- a/Makefile
++++ b/Makefile
+@@ -14,7 +14,7 @@ all: build
+ build: gccbuild luabuild
+ 
+ gccbuild:
+-	make -C modules/base CC="cc" CFLAGS="" LDFLAGS="" SDK="$(shell test -f .running-sdk && echo 1)" host-install
++	make -C modules/base CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" SDK="$(shell test -f .running-sdk && echo 1)" host-install
+ 	for i in $(MODULES); do \
+ 		make -C$$i SDK="$(shell test -f .running-sdk && echo 1)" compile || { \
+ 			echo "*** Compilation of $$i failed!"; \
+-- 
+2.7.4
+
