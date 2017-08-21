@@ -1,0 +1,138 @@
+From e825c3202c38ba97ec69428ef3993c20ec523796 Mon Sep 17 00:00:00 2001
+From: David Thornley <david.thornley@touchstargroup.com>
+Date: Thu, 3 Nov 2016 15:55:26 +1100
+Subject: [PATCH] luci-proto-qmi: Added support for QMI Cellular
+
+Derived mostly from (ppp) 3g implementation. Currently exposing the following configuration through cbi (apn/pincode/username/password/auth/ipv6).
+
+Signed-off-by: David Thornley <david.thornley@touchstargroup.com>
+---
+ protocols/luci-proto-qmi/Makefile                  | 14 +++++++
+ .../luasrc/model/cbi/admin_network/proto_qmi.lua   | 45 ++++++++++++++++++++++
+ .../luasrc/model/network/proto_qmi.lua             | 41 ++++++++++++++++++++
+ 3 files changed, 100 insertions(+)
+ create mode 100644 protocols/luci-proto-qmi/Makefile
+ create mode 100644 protocols/luci-proto-qmi/luasrc/model/cbi/admin_network/proto_qmi.lua
+ create mode 100644 protocols/luci-proto-qmi/luasrc/model/network/proto_qmi.lua
+
+diff --git a/protocols/luci-proto-qmi/Makefile b/protocols/luci-proto-qmi/Makefile
+new file mode 100644
+index 0000000..8b2b5e3
+--- /dev/null
++++ b/protocols/luci-proto-qmi/Makefile
+@@ -0,0 +1,14 @@
++#
++# Copyright (C) 2008-2014 The LuCI Team <luci@lists.subsignal.org>
++#
++# This is free software, licensed under the Apache License, Version 2.0 .
++#
++
++include $(TOPDIR)/rules.mk
++
++LUCI_TITLE:=Support for QMI
++LUCI_DEPENDS:=+uqmi
++
++include ../../luci.mk
++
++# call BuildPackage - OpenWrt buildroot signature
+diff --git a/protocols/luci-proto-qmi/luasrc/model/cbi/admin_network/proto_qmi.lua b/protocols/luci-proto-qmi/luasrc/model/cbi/admin_network/proto_qmi.lua
+new file mode 100644
+index 0000000..3498f87
+--- /dev/null
++++ b/protocols/luci-proto-qmi/luasrc/model/cbi/admin_network/proto_qmi.lua
+@@ -0,0 +1,45 @@
++-- Copyright 2016 David Thornley <david.thornley@touchstargroup.com>
++-- Licensed to the public under the Apache License 2.0.
++
++local map, section, net = ...
++
++local device, apn, pincode, username, password
++local auth, ipv6      
++
++
++device = section:taboption("general", Value, "device", translate("Modem device"))
++device.rmempty = false
++
++local device_suggestions = nixio.fs.glob("/dev/cdc-wdm*")
++
++if device_suggestions then
++	local node
++	for node in device_suggestions do
++		device:value(node)
++	end
++end
++
++
++apn = section:taboption("general", Value, "apn", translate("APN"))
++
++
++pincode = section:taboption("general", Value, "pincode", translate("PIN"))
++
++
++username = section:taboption("general", Value, "username", translate("PAP/CHAP username"))
++
++
++password = section:taboption("general", Value, "password", translate("PAP/CHAP password"))
++password.password = true
++
++auth = section:taboption("general", Value, "auth", translate("Authentication Type"))
++auth:value("", translate("-- Please choose --"))
++auth:value("both", "PAP/CHAP (both)")
++auth:value("pap", "PAP")
++auth:value("chap", "CHAP")
++auth:value("none", "NONE")
++
++if luci.model.network:has_ipv6() then
++    ipv6 = section:taboption("advanced", Flag, "ipv6", translate("Enable IPv6 negotiation"))
++    ipv6.default = ipv6.disabled
++end
+diff --git a/protocols/luci-proto-qmi/luasrc/model/network/proto_qmi.lua b/protocols/luci-proto-qmi/luasrc/model/network/proto_qmi.lua
+new file mode 100644
+index 0000000..eb0e796
+--- /dev/null
++++ b/protocols/luci-proto-qmi/luasrc/model/network/proto_qmi.lua
+@@ -0,0 +1,41 @@
++-- Copyright 2016 David Thornley <david.thornley@touchstargroup.com>
++-- Licensed to the public under the Apache License 2.0.
++
++local netmod = luci.model.network
++local interface = luci.model.network.interface
++local proto = netmod:register_protocol("qmi")
++
++function proto.get_i18n(self)
++	return luci.i18n.translate("QMI Cellular")
++end
++
++function proto.get_interface(self)
++	return interface(self:ifname(), self)
++end
++
++function proto.opkg_package(self)
++	return "uqmi"
++end
++
++function proto.is_installed(self)
++	return nixio.fs.access("/lib/netifd/proto/qmi.sh")
++end
++
++function proto.is_floating(self)
++	return true
++end
++
++function proto.is_virtual(self)
++	return true
++end
++
++function proto.get_interfaces(self)
++	return nil
++end
++
++function proto.contains_interface(self, ifc)
++	 return (netmod:ifnameof(ifc) == self:ifname())
++
++end
++
++netmod:register_pattern_virtual("^qmi-%w")
+-- 
+2.9.3
+
