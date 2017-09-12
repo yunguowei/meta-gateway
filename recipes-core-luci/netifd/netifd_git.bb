@@ -23,8 +23,15 @@ SRC_URI = "git://git.openwrt.org/project/netifd.git;protocol=git \
             file://sbin/ifup \
             file://0001-Make-netifd-to-clean-resolv.conf.auto-when-link-down.patch \
             file://0002-system-linux-Fix-IFF_LOWER_UP-define.patch \
-            file://etc \
-            file://lib \
+            file://etc/hotplug.d/iface/00-netstate \
+            file://etc/modem_cell_default \
+            file://etc/config/network \
+            file://lib/wifi/mac80211.sh \
+            file://lib/netifd/wireless/mac80211.sh \
+            file://lib/netifd/proto/dhcp.sh \
+            file://lib/netifd/dhclient-script \
+            file://lib/netifd/hostapd.sh \
+            file://lib/network/config.sh \
             file://netifd.service \
             file://netifd-systemd-wrapper \
             file://hostapd.sh \
@@ -49,10 +56,18 @@ do_install() {
     install -d ${D}/lib/netifd
     install -m 0755 ${B}/netifd ${D}/${base_sbindir}
     install -m 0755 ${S}/scripts/* ${D}/lib/netifd/
-    for i in etc lib sbin; do
-        cp -a ${WORKDIR}/$i ${D}/
-        chown -R root:root ${D}/$i
-    done
+    (
+	cd ${WORKDIR}
+        for i in `find etc lib sbin -type d`; do
+            install -d ${D}/$i
+        done
+        for i in `find lib sbin -type f`; do
+            install -m 0755 $i ${D}/$i
+        done
+        for i in `find etc -type f`; do
+            install -m 0644 $i ${D}/$i
+        done
+    )
     ln -sf ifup ${D}/${base_sbindir}/ifdown
 
     install -d ${D}${systemd_unitdir}/system
