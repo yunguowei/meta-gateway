@@ -6,6 +6,13 @@ STOP=98
 start() {
 	local NEED_COMMITS=false
 
+        netif=`ip -o link  |awk -F: '{print $2}' | grep "^eth\|en" | sort`
+	for i in $netif; do
+		uci set network.wan.ifname=$i
+		break
+	done
+	uci commit network	
+
 	/sbin/wifi detect > /tmp/wireless.tmp
 	if [ -s /tmp/wireless.tmp ]; then
 		if [ ! -f /etc/config/wireless ]; then
