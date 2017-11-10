@@ -34,7 +34,7 @@ do_install () {
         install -d ${D}${systemd_unitdir}/system
         install -m 0644 ${WORKDIR}/dnsmasq.service ${D}${systemd_unitdir}/system
 
-        if [ "${@base_contains('PACKAGECONFIG', 'dbus', 'dbus', '', d)}" != "" ]; then
+        if [ "${@bb.utils.contains('PACKAGECONFIG', 'dbus', 'dbus', '', d)}" != "" ]; then
             install -d ${D}${sysconfdir}/dbus-1/system.d
             install -m 644 dbus/dnsmasq.conf ${D}${sysconfdir}/dbus-1/system.d/
         fi
