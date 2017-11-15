@@ -1,0 +1,36 @@
+From ac51578d1343155140fc2e0811b51a7f4b9117a3 Mon Sep 17 00:00:00 2001
+From: Fupan Li <fupan.li@windriver.com>
+Date: Wed, 15 Nov 2017 08:43:30 +0000
+Subject: [PATCH] luci: switch busybox to top command for show processes
+
+Signed-off-by: Fupan Li <fupan.li@windriver.com>
+---
+ modules/base/luasrc/sys.lua | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/modules/base/luasrc/sys.lua b/modules/base/luasrc/sys.lua
+index 6bd515e..2b2e8ab 100644
+--- a/modules/base/luasrc/sys.lua
++++ b/modules/base/luasrc/sys.lua
+@@ -860,15 +860,15 @@ end
+ function process.list()
+ 	local data = {}
+ 	local k
+-	local ps = luci.util.execi("/bin/busybox top -bn1")
++	local ps = luci.util.execi("top -bn1")
+ 
+ 	if not ps then
+ 		return
+ 	end
+ 
+ 	for line in ps do
+-		local pid, ppid, user, stat, vsz, mem, cpu, cmd = line:match(
+-			"^ *(%d+) +(%d+) +(%S.-%S) +([RSDZTW][W ][<N ]) +(%d+%S) +(%d+%%) +(%d+%%) +(.+)"
++                local pid, user, pr, ni, virt, res, shr, stat, cpu, mem, time, cmd = line:match( 
++                "^ *(%d+) +(%S.-%S) +(%d+) +(%d+) +(%d+) +(%d+) +(%d+) +([RSDZTW][W ][<N ]) +(%d+.%d+) +(%d+.%d+) +(.+) +(.+)" 
+ 		)
+ 
+ 		local idx = tonumber(pid)
+-- 
+2.7.4
+
