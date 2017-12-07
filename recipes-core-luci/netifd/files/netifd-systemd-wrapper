@@ -1,7 +1,7 @@
 #!/bin/sh /etc/rc.common
 
 wait_netifd_ready() {
-	/bin/ubus -t 30 wait_for `/sbin/uci show network | sed '/=interface/!d;s/\(network\)\.\(.*\)=\(.*\)/\1.\3.\2/'`
+	/usr/bin/ubus -t 30 wait_for `/sbin/uci show network | sed '/=interface/!d;s/\(network\)\.\(.*\)=\(.*\)/\1.\3.\2/'`
 	/bin/systemd-notify --ready --pid --status="Processing requests..."
 }
 
