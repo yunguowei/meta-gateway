@@ -81,6 +81,21 @@ do_install() {
 
     echo "${MACHINE}" > ${D}${sysconfdir}/device_name
     echo "${MACHINE}" > ${D}${sysconfdir}/board_name
+
+    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+	if [ ! -d ${D}/${sbindir} ]; then
+	    install -d ${D}/${sbindir}
+	fi
+	if [ ! -d ${D}/${bindir} ]; then
+	    install -d ${D}/${bindir}
+	fi
+        cp -a ${D}/sbin/* ${D}/${sbindir}/
+        cp -a ${D}/bin/*  ${D}/${bindir}/
+	cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
+        rm -rf ${D}/sbin
+        rm -rf ${D}/bin
+	rm -rf ${D}/lib
+    fi
 }
 
 FILES_${PN} += "/*"

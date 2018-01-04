@@ -21,9 +21,9 @@ IMAGE_INSTALL += "packagegroup-core-boot \
                   packagegroup-core-ssh-openssh \
                   packagegroup-core-full-cmdline \
                   packagegroup-util-linux \
-                  packagegroup-builder \
                   packagegroup-dom0 \
                   packagegroup-container \
+		  flatpak \
                   "
 
 # WiFi and Bluetooth
@@ -56,6 +56,5 @@ IMAGE_INSTALL += "umbim"
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_EXTRA_INSTALL}"
 
-inherit core-image
+inherit flux-ota core-image
 inherit builder-base
-

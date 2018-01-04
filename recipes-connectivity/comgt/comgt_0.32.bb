@@ -37,6 +37,12 @@ do_install() {
 
     install -m 0755 ${S}/comgt ${D}/${bindir}
     cd ${D}/${bindir};ln -sf comgt gcom
+
+    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+        cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
+        rm -rf ${D}/lib
+    fi
+
 }
 
 FILES_${PN} += "${base_libdir}/netifd/* /lib/netifd"

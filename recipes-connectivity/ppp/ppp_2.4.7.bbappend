@@ -43,6 +43,11 @@ do_install_append() {
     install -m 0755 ${WORKDIR}/lib/netifd/ppp-up ${D}/lib/netifd/ppp-up
     install -m 0755 ${WORKDIR}/lib/netifd/ppp-down ${D}/lib/netifd/ppp-down
     install -m 0755 ${WORKDIR}/lib/netifd/proto/ppp.sh ${D}/lib/netifd/proto/ppp.sh
+
+    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+        cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
+        rm -rf ${D}/lib
+    fi
 }
 
-FILES_${PN} += "${libdir}/pppd/${PV}/pptp.so /lib/netifd/*"
+FILES_${PN} += "${libdir}/pppd/${PV}/pptp.so /lib/netifd/* ${nonarch_libdir}"

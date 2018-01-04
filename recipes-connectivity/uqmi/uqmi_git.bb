@@ -21,8 +21,8 @@ B = "${S}"
 FILES_SOLIBSDEV = ""
 
 do_install_append() {
-	install -d ${D}/lib/netifd/proto/
-	install -m 0755 ${WORKDIR}/qmi.sh ${D}/lib/netifd/proto/
+	install -d ${D}/${nonarch_base_libdir}/netifd/proto/
+	install -m 0755 ${WORKDIR}/qmi.sh ${D}/${nonarch_base_libdir}/netifd/proto/
 }
 
-FILES_${PN}  += "${libdir}/* /lib/netifd"
+FILES_${PN}  += "${libdir}/* ${nonarch_base_libdir}/netifd"

@@ -18,8 +18,13 @@ inherit cmake pkgconfig
 S = "${WORKDIR}/git"
 
 do_install_append(){
-	install -d ${D}/lib/netifd/proto/
-	install -m 0755 ${WORKDIR}/mbim.sh ${D}/lib/netifd/proto/
+	if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+            install -d ${D}/${nonarch_base_libdir}/netifd/proto/
+	    install -m 0755 ${WORKDIR}/mbim.sh ${D}/${nonarch_base_libdir}/netifd/proto/ 
+        else
+            install -d ${D}/lib/netifd/proto/
+            install -m 0755 ${WORKDIR}/mbim.sh ${D}/lib/netifd/proto/
+	fi
 }
 
 FILES_SOLIBSDEV = ""

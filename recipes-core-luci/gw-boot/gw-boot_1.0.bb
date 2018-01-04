@@ -38,6 +38,11 @@ do_install() {
 	install -m 0644 ${WORKDIR}/runonce.service ${D}${systemd_unitdir}/system
 	install -d ${D}/lib/network
 	install -m 0755 ${WORKDIR}/utils/detect-modem.py ${D}/lib/network/detect-modem.py
+
+        if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+            cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
+	    rm -rf ${D}/lib
+	fi
 }
 
 inherit systemd
@@ -49,4 +54,4 @@ SYSTEMD_SERVICE_${PN} = "\
 	boot-stage4.service \
 	runonce.service \
 "
-FILES_${PN} += "/lib/network/*"
+FILES_${PN} += "/lib/network/* ${nonarch_libdir}"

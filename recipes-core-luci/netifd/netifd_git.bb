@@ -73,9 +73,16 @@ do_install() {
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/netifd.service ${D}${systemd_unitdir}/system
     install -m 0755 ${WORKDIR}/netifd-systemd-wrapper ${D}/${base_sbindir}
+    
+    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+        cp -a ${D}/sbin/* ${D}/usr/sbin/
+        cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
+        rm -rf ${D}/sbin
+        rm -rf ${D}/lib
+    fi
 }
 
 CONFFILES_${PN} += "${sysconfdir}/config/network"
 CONFFILES_${PN} += "${sysconfdir}/config/dhcp"
 
-FILES_${PN} = "${sysconfdir}/* ${base_sbindir}/* /etc/* /lib/*"
+FILES_${PN} = "${sysconfdir}/* ${base_sbindir}/* /etc/* /lib/*  ${nonarch_base_libdir}"

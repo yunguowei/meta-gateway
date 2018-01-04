@@ -34,12 +34,16 @@ EXTRA_OECMAKE="-DCMAKE_SKIP_RPATH:BOOL=YES \
 
 B = "${S}"
 do_install_append() {
-    install -Dm 0755 ${WORKDIR}/uci.sh ${D}/lib/config/uci.sh
-
-    mkdir -p ${D}/sbin
     mkdir -p ${D}/usr/sbin
     ln -s /usr/bin/uci ${D}/usr/sbin/uci
-    ln -s /usr/bin/uci ${D}/sbin/uci
+
+    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+        install -Dm 0755 ${WORKDIR}/uci.sh  ${D}/${nonarch_libdir}/config/uci.sh
+    else
+	mkdir -p ${D}/sbin
+        ln -s /usr/bin/uci ${D}/sbin/uci
+	install -Dm 0755 ${WORKDIR}/uci.sh ${D}/lib/config/uci.sh
+    fi
 }
 
 PACKAGES += "${PN}-lua"
@@ -48,7 +52,9 @@ FILES_${PN} += "${base_sbindir}/uci \
 	${libdir}/libuci.so \
 	${sysconfdir}/ucisa/* \
 	${sysconfdir}/uci-defaults \
-	/lib/config/*"
+	/lib/config/*  \
+        ${nonarch_libdir}/config/uci.sh"
+
 FILES_${PN}-lua = "${libdir}/lua/5.1/uci.so"
 FILES_${PN}-dev="${includedir}/*"
 FILES_${PN}-dbg += "${libdir}/lua/5.1/.debug/*"

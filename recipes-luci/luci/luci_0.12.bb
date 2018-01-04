@@ -49,6 +49,7 @@ FILES_${PN} += " \
 	${libdir}/lua/5.1/px5g/ \
 	${libdir}/lua/5.1/px5g.so \
 	${libdir}/lua/5.1/neightbl.so \
+        ${nonarch_libdir} \
 "
 FILES_${PN}-dbg += "\
 	${libdir}/lua/5.1/.debug/ \
@@ -85,6 +86,16 @@ do_install() {
 
 	cp -rf ${WORKDIR}/etc ${D}
 	rm -rf ${D}/lib/upgrade
+
+        if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
+	    if [ ! -d ${D}${sbindir} ]; then
+	        install -d ${D}${sbindir}
+	    fi
+	    cp -a ${D}/sbin/* ${D}${sbindir}
+            cp -a ${D}/lib ${D}/usr/
+            rm -rf ${D}/lib
+	    rm -rf ${D}/sbin/
+        fi
 }
 
 CONFFILES_${PN} += "${sysconfdir}/config/system"
