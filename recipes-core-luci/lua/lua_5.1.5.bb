@@ -42,10 +42,6 @@ do_install () {
         install
     install -d ${D}${libdir}/pkgconfig
     install -m 0644 ${WORKDIR}/lua5.1.pc ${D}${libdir}/pkgconfig/lua5.1.pc
-    rmdir ${D}${libdir}/lua/5.1
-    rmdir ${D}${libdir}/lua
-    rmdir ${D}${datadir}/lua/5.1
-    rmdir ${D}${datadir}/lua
 }
 BBCLASSEXTEND = "native"
 

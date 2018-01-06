@@ -6,7 +6,7 @@ DefaultDependencies=no
 
 [Service]
 Type=simple
-ExecStart=/sbin/ubusd
+ExecStart=/usr/sbin/ubusd
 RemainAfterExit=yes
 
 [Install]

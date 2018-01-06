@@ -31,10 +31,6 @@ FILES_${PN}-lua = "${libdir}/lua/5.1/ubus.so"
 FILES_${PN}-dbg += "${libdir}/lua/5.1/.debug/*"
 
 do_install_append() {
-	install -dm 0755 ${D}/sbin
-	ln -s /usr/sbin/ubusd ${D}/sbin/ubusd
-
 	install -d ${D}${systemd_unitdir}/system
 	install -m 0644 ${WORKDIR}/ubus.service ${D}${systemd_unitdir}/system
-
 }
