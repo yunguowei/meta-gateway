@@ -29,4 +29,4 @@ do_install_append(){
 
 FILES_SOLIBSDEV = ""
 
-FILES_${PN}  += "${libdir}/* /lib/netifd"
+FILES_${PN}  += "${libdir}/* /lib/netifd ${nonarch_libdir}"

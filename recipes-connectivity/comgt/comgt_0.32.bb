@@ -45,7 +45,7 @@ do_install() {
 
 }
 
-FILES_${PN} += "${base_libdir}/netifd/* /lib/netifd"
+FILES_${PN} += "${base_libdir}/netifd/* /lib/netifd ${nonarch_libdir}"
 
 SRC_URI[md5sum] = "db2452680c3d953631299e331daf49ef"
 SRC_URI[sha256sum] = "0cedb2a5aa608510da66a99aab74df3db363df495032e57e791a2ff55f1d7913"
