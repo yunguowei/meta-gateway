@@ -23,6 +23,7 @@ SRC_URI = "git://git.openwrt.org/project/netifd.git;protocol=git \
             file://sbin/ifup \
             file://0001-Make-netifd-to-clean-resolv.conf.auto-when-link-down.patch \
             file://0002-system-linux-Fix-IFF_LOWER_UP-define.patch \
+            file://0003-replace_is_error_helper_with_null_check.patch \
             file://etc/hotplug.d/iface/00-netstate \
             file://etc/modem_cell_default \
             file://etc/config/network \
