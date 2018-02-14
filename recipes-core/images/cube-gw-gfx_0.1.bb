@@ -28,7 +28,7 @@ IMAGE_INSTALL += "packagegroup-core-boot \
                   "
 
 # WiFi and Bluetooth
-IMAGE_INSTALL += "hostapd hostap-utils"
+IMAGE_INSTALL += "hostapd"
 IMAGE_INSTALL += "wireless-tools wpa-supplicant"
 IMAGE_INSTALL += "linux-firmware"
 IMAGE_INSTALL += "bluez5"
