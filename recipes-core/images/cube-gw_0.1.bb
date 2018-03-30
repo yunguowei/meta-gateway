@@ -21,8 +21,6 @@ IMAGE_INSTALL += "packagegroup-core-boot \
                   packagegroup-core-ssh-openssh \
                   packagegroup-core-full-cmdline \
                   packagegroup-util-linux \
-                  packagegroup-dom0 \
-                  packagegroup-container \
 		  flatpak \
                   "
 
