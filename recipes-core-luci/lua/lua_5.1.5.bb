@@ -22,7 +22,7 @@ TARGET_CC_ARCH += " -fPIC ${LDFLAGS}"
 EXTRA_OEMAKE = "'CC=${CC} -fPIC' 'MYCFLAGS=${CFLAGS} -DLUA_USE_LINUX -fPIC' MYLDFLAGS='${LDFLAGS}'"
 
 do_configure_prepend() {
-    sed -i -e s:/usr/local:${prefix}:g src/luaconf.h
+    sed -i -e s:/usr/local:${base_prefix}:g src/luaconf.h
     sed -i -e s:lib/lua/5.1/:${base_libdir}/lua/5.1/:g src/luaconf.h
 }
 
@@ -32,7 +32,7 @@ do_compile () {
 
 do_install () {
     oe_runmake \
-        'INSTALL_TOP=${D}${prefix}' \
+        'INSTALL_TOP=${D}'${base_prefix} \
         'INSTALL_BIN=${D}${bindir}' \
         'INSTALL_INC=${D}${includedir}/' \
         'INSTALL_MAN=${D}${mandir}/man1' \
@@ -42,6 +42,7 @@ do_install () {
         install
     install -d ${D}${libdir}/pkgconfig
     install -m 0644 ${WORKDIR}/lua5.1.pc ${D}${libdir}/pkgconfig/lua5.1.pc
+    rm -rf ${D}/share 
 }
 BBCLASSEXTEND = "native"
 
