@@ -51,6 +51,7 @@ IMAGE_INSTALL += "gw-boot"
 IMAGE_INSTALL += "comgt"
 IMAGE_INSTALL += "uqmi"
 IMAGE_INSTALL += "umbim"
+IMAGE_INSTALL += "dpkg"
 
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_EXTRA_INSTALL}"
