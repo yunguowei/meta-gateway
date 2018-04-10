@@ -1,0 +1,26 @@
+From d3cd86a9225c5298c477434c87ad77ddc33147d7 Mon Sep 17 00:00:00 2001
+From: Yunguo Wei <yunguo.wei@windriver.com>
+Date: Mon, 9 Apr 2018 16:31:09 +0800
+Subject: [PATCH] Adjust CFLAGS for cross compile
+
+Signed-off-by: Yunguo Wei <yunguo.wei@windriver.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index ff6f46a..09aef6d 100755
+--- a/Makefile
++++ b/Makefile
+@@ -34,7 +34,7 @@ BIN     = $(CPROG)
+ MANP	= comgt.1 sigmon.1
+ CC	?= cc
+ 
+-CFLAGS  = -c
++CFLAGS  ?= -c
+ LDFLAGS =
+ 
+ all: $(BIN)
+-- 
+2.7.4
+

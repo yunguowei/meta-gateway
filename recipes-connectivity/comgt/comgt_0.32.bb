@@ -12,6 +12,7 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}.${PV}.tgz \
             file://chatscripts/ \
             file://gcomscripts/ \
             file://001-compile_fix.patch \
+            file://0001-Adjust-CFLAG-for-cross-compile.patch \
             "
 
 LIC_FILES_CHKSUM = "file://gpl.txt;md5=393a5ca445f6965873eca0259a17f833"
@@ -28,24 +29,15 @@ do_install() {
     install -m 0755 ${WORKDIR}/gcomscripts/* ${D}/${sysconfdir}/gcom
     install -m 0755 ${WORKDIR}/3g.usb ${D}/${sysconfdir}/hotplug.d/tty/30-3g
 
-    install -d ${D}/${base_libdir}/netifd/proto
-    install -m 0755 ${WORKDIR}/3g.sh ${D}/${base_libdir}/netifd/proto
-
-    install -d ${D}/lib/netifd/proto
-    install -m 0755 ${WORKDIR}/3g.sh ${D}/lib/netifd/proto
-    install -m 0755 ${WORKDIR}/ncm.sh ${D}/lib/netifd/proto
+    install -d ${D}/${nonarch_libdir}/netifd/proto
+    install -m 0755 ${WORKDIR}/3g.sh ${D}/${nonarch_libdir}/netifd/proto
+    install -m 0755 ${WORKDIR}/ncm.sh ${D}/${nonarch_libdir}/netifd/proto
 
     install -m 0755 ${S}/comgt ${D}/${bindir}
     cd ${D}/${bindir};ln -sf comgt gcom
-
-    if [ -n "${@bb.utils.contains('DISTRO_FEATURES', 'usrmerge', 'y', '', d)}" ]; then
-        cp -a ${D}/lib/*  ${D}/${nonarch_libdir}/
-        rm -rf ${D}/lib
-    fi
-
 }
 
-FILES_${PN} += "${base_libdir}/netifd/* /lib/netifd ${nonarch_libdir}"
+FILES_${PN} += "${nonarch_libdir}"
 
 SRC_URI[md5sum] = "db2452680c3d953631299e331daf49ef"
 SRC_URI[sha256sum] = "0cedb2a5aa608510da66a99aab74df3db363df495032e57e791a2ff55f1d7913"
