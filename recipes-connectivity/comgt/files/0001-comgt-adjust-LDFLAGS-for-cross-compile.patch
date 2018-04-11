@@ -1,0 +1,26 @@
+From 68dfcf293a0227897a16754d1f8cb725ca1beb7c Mon Sep 17 00:00:00 2001
+From: Yunguo Wei <yunguo.wei@windriver.com>
+Date: Wed, 11 Apr 2018 16:32:43 +0800
+Subject: [PATCH] comgt: adjust LDFLAGS for cross compile
+
+Signed-off-by: Yunguo Wei <yunguo.wei@windriver.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 09aef6d..d69f386 100755
+--- a/Makefile
++++ b/Makefile
+@@ -35,7 +35,7 @@ MANP	= comgt.1 sigmon.1
+ CC	?= cc
+ 
+ CFLAGS  ?= -c
+-LDFLAGS =
++LDFLAGS ?=
+ 
+ all: $(BIN)
+ 
+-- 
+2.7.4
+
