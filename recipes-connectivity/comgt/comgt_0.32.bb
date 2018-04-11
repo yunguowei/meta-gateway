@@ -12,7 +12,7 @@ SRC_URI = "${SOURCEFORGE_MIRROR}/${BPN}/${BPN}.${PV}.tgz \
             file://chatscripts/ \
             file://gcomscripts/ \
             file://001-compile_fix.patch \
-            file://0001-Adjust-CFLAG-for-cross-compile.patch \
+            file://0001-Adjust-CFLAGS-for-cross-compile.patch \
             "
 
 LIC_FILES_CHKSUM = "file://gpl.txt;md5=393a5ca445f6965873eca0259a17f833"
