@@ -25,6 +25,9 @@ IMAGE_INSTALL += "packagegroup-core-boot \
 		  flatpak \
                   "
 
+# USB
+IMAGE_INSTALL += "usbutils"
+
 # WiFi and Bluetooth
 IMAGE_INSTALL += "hostapd hostap-utils"
 IMAGE_INSTALL += "wireless-tools wpa-supplicant"
