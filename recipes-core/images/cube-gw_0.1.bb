@@ -56,6 +56,11 @@ IMAGE_INSTALL += "uqmi"
 IMAGE_INSTALL += "umbim"
 IMAGE_INSTALL += "dpkg"
 
+#VPN support
+IMAGE_INSTALL += "xl2tpd"
+IMAGE_INSTALL += "strongswan"
+IMAGE_INSTALL += "pptpd"
+
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_EXTRA_INSTALL}"
 
