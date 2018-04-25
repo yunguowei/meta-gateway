@@ -61,6 +61,9 @@ IMAGE_INSTALL += "xl2tpd"
 IMAGE_INSTALL += "strongswan"
 IMAGE_INSTALL += "pptpd"
 
+# docker support
+IMAGE_INSTALL += "docker"
+
 # Extras as defined externally
 IMAGE_INSTALL += "${CUBE_DOM_GW_EXTRA_INSTALL}"
 
